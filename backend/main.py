@@ -55,6 +55,7 @@ app.add_middleware(
 def read_root():
     return JSONResponse(content={"message": "Hello from FastAPI on Vercel!"})
 
+
 # Debug middleware to log requests
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
@@ -62,7 +63,6 @@ async def log_requests(request: Request, call_next):
     response = await call_next(request)
     print(f"Response Status: {response.status_code}")
     return response
-
 # =========================
 # Database Setup
 # =========================
@@ -668,6 +668,8 @@ async def get_submissions(contest_id: str, current_user: dict = Depends(get_curr
 # =========================
 # Plagiarism Router
 # =========================
+
+
 plagiarism_router = APIRouter()
 
 @plagiarism_router.post("/check")
