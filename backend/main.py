@@ -18,7 +18,8 @@ from dotenv import load_dotenv
 from mangum import Mangum
 import bcrypt
 import uvicorn
-from starlette.middleware.base import BaseHTTPMiddleware
+# Import simple callable middleware instead of BaseHTTPMiddleware
+from starlette.middleware import Middleware
 
 # Load environment variables
 load_dotenv()
@@ -56,13 +57,14 @@ def read_root():
     return JSONResponse(content={"message": "Hello from FastAPI on Vercel!"})
 
 
-# Debug middleware to log requests
+# Debug middleware to log requests - using a simple middleware function instead of class
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     print(f"Request: {request.method} {request.url}")
     response = await call_next(request)
     print(f"Response Status: {response.status_code}")
     return response
+
 # =========================
 # Database Setup
 # =========================
