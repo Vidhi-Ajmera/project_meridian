@@ -9,3 +9,4 @@ bcrypt
 mangum
 pydantic[email]
 motor
+passlib 
