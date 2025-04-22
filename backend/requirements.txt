@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+pymongo
+python-dotenv
+openai
+python-jose
+python-multipart
+bcrypt
+mangum
+pydantic[email]
+motor

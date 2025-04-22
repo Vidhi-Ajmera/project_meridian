@@ -1,0 +1,520 @@
+/* CodeEvaluator.css - Fixed Layout */
+:root {
+  --primary-color: #3b82f6;
+  --primary-hover: #2563eb;
+  --error-color: #ef4444;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --light-bg: #ffffff;
+  --dark-bg: #1a1a1a;
+  --light-text: #111827;
+  --dark-text: #f3f4f6;
+  --light-border: #e5e7eb;
+  --dark-border: #092348;
+  --light-card-bg: #ffffff;
+  --dark-card-bg: #1f2937;
+  --light-paper-bg: #f9fafb;
+  --dark-paper-bg: #5c6779;
+  --transition: all 0.3s ease;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+.light-theme {
+  background-color: var(--light-bg);
+  color: var(--light-text);
+}
+
+.dark-theme {
+  background-color: var(--dark-bg);
+  color: var(--dark-text);
+}
+/* Fix for container class */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--light-bg); /* Use CSS variable instead of fixed color */
+  color: var(--light-text); /* Use CSS variable instead of fixed color */
+  transition: var(--transition);
+}
+
+.container.dark-theme {
+  background-color: var(--dark-bg); /* Use CSS variable instead of fixed color */
+  color: var(--dark-text); /* Use CSS variable instead of fixed color */
+}
+
+/* Fix for top-section class */
+.top-section {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-bottom: 30px;
+  position: relative;
+  background-color: var(--light-bg); /* Use CSS variable instead of fixed color */
+  color: var(--light-text); /* Use CSS variable instead of fixed color */
+  transition: var(--transition);
+}
+
+.top-section.dark-theme,
+.dark-theme .top-section {
+  background-color: var(--dark-bg); /* Use CSS variable instead of fixed color */
+  color: var(--dark-text); /* Use CSS variable instead of fixed color */
+}
+
+/* Fix for editor container */
+.editor-container {
+  width: 100%;
+  height: 250px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--light-border);
+  margin-bottom: 20px;
+  transition: var(--transition);
+  position: relative;
+  background-color: var(--light-bg);
+}
+
+.dark-theme .editor-container {
+  border-color: var(--dark-border);
+  background-color: var(--dark-bg);
+}
+
+/* Fix for app-layout */
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background-color: var(--light-bg);
+  color: var(--light-text);
+  transition: var(--transition);
+}
+
+.app-layout.dark-theme,
+.dark-theme .app-layout {
+  background-color: var(--dark-bg);
+  color: var(--dark-text);
+}
+
+/* Fix potential issue with editor background */
+.cm-editor {
+  height: 100% !important;
+  width: 100% !important;
+  font-family: 'Fira Code', monospace;
+  transition: var(--transition);
+}
+
+.dark-theme .cm-editor {
+  background-color: var(--dark-bg) !important;
+}
+
+.dark-theme .cm-editor .cm-scroller {
+  color: var(--dark-text);
+}
+
+/* Ensure proper application of dark theme to nested elements */
+.dark-theme * {
+  border-color: var(--dark-border);
+}
+/* Controls for editor properly positioned */
+.editor-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 15px;
+}
+ /* Language Selector */
+ .language-selector {
+  font-size: 0.9rem;
+  font-weight: bold;
+  border-radius: 12px;
+  border: 3px solid black;
+  transition: all 0.3s ease-in-out;
+}
+
+.dark-theme .language-selector {
+  background-color: #333;
+  color: white;
+  border-radius: 12px;
+  border: 2px solid gray;
+}
+
+.language-selector:hover,
+.dark-theme .language-selector:hover {
+  box-shadow: 4px 4px 15px rgba(255, 255, 255, 0.3);
+  background: rgba(36, 36, 36, 0.3);
+  transform: scale(1.05);
+}
+.language-display {
+  position: fixed;
+  display: flex;
+  top: 10px;
+  left: 10px;
+  background-color: #333;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  z-index: 1000;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.language-display:hover {
+  opacity: 1;
+}
+.tooltip-container {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.tooltip-text {
+  visibility: hidden;
+  width: max-content;
+  background-color: black;
+  color: beige;
+  text-align: center;
+  border-radius: 5px;
+  font-size: 0.7rem;
+  padding: 5px 10px;
+  position: absolute;
+  z-index: 1;
+  top: 150%;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+}
+
+.tooltip-container:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
+/* Button container with proper spacing and alignment */
+.button-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.top-buttons {
+  display: flex;
+  width: 100%;
+  gap: 12px;
+}
+
+/* Make the tooltip span take the same flex space as the reset button */
+.top-buttons > span {
+  flex: 1;
+  display: flex;
+}
+
+.analyze-button, .reset-button, .logout-button {
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  padding: 10px 16px !important;
+  border-radius: 6px !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) !important;
+  flex: 1;
+}
+
+/* For the analyze button specifically */
+.analyze-button {
+  background: linear-gradient(135deg, #4f46e5, #3b82f6) !important;
+  width: 100%; /* Ensures it fills the tooltip span */
+}
+
+.analyze-button:hover {
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3) !important;
+  transform: translateY(-2px);
+}
+
+/* For the reset button */
+.reset-button {
+  background: linear-gradient(135deg, #ef4444, #f97316) !important;
+}
+
+.reset-button:hover {
+  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3) !important;
+  transform: translateY(-2px);
+}
+
+/* For the logout button */
+.logout-button {
+  background: linear-gradient(135deg, #dc2626, #ef4444) !important;
+  width: 100%;
+}
+
+.logout-button:hover {
+  box-shadow: 0 4px 8px rgba(220, 38, 38, 0.3) !important;
+  transform: translateY(-2px);
+}
+
+.button-icon {
+  font-size: 18px;
+  margin-right: 8px;
+}
+
+/* Transition for hover effects */
+.analyze-button, .reset-button, .logout-button {
+  transition: all 0.2s ease-in-out !important;
+}
+
+/* Theme toggle properly positioned */
+.theme-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  transition: var(--transition);
+}
+
+.theme-icon {
+  font-size: 18px;
+  transition: var(--transition);
+}
+
+.active-icon {
+  transform: scale(1.2);
+}
+
+/* Analysis results section */
+.analysis-container {
+  width: 100%;
+  margin-top: 30px;
+  padding-top: 30px;
+  border-top: 1px solid var(--light-border);
+  transition: var(--transition);
+}
+
+.dark-theme .analysis-container {
+  border-color: var(--dark-border);
+}
+
+/* Dashboard cards with proper spacing and layout */
+.dashboard-card {
+  margin-bottom: 20px;
+  transition: var(--transition);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.dark-theme .dashboard-card {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Grid layout for the analysis cards */
+.analysis-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  width: 100%;
+}
+
+/* Error message styling */
+.error-message {
+  margin-top: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+  width: 100%;
+}
+
+/* Code block styling */
+.dark-pre {
+  color: var(--dark-text);
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+pre {
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 10px;
+  border-radius: 4px;
+  overflow-x: auto;
+  margin: 0;
+  font-family: 'Fira Code', monospace;
+}
+
+/* Logout button properly positioned */
+
+.logout-button-main {
+  position: fixed;
+  top: -15px;
+  left: 55%;
+  background: #aba9a9;
+  color: black !important;
+  border: 3px solid black !important;
+  border-radius: 20px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.3s ease-in-out;
+  z-index: 1000;
+}
+.logout-button-main:hover {
+  background-color: #dc2626;
+}
+
+
+  .logout-button {
+    color: black !important;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: all 0.3s ease-in-out;
+  }
+  
+
+/* CodeMirror editor specific styles - ensure proper sizing */
+.cm-editor {
+  overflow: hidden !important;
+  height: 100% !important;
+  width: 100% !important;
+  font-family: 'Fira Code', monospace;
+}
+
+.cm-editor .cm-scroller {
+  font-size: 14px;
+  height: 100% !important;
+}
+
+/* Loading state styling */
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Chart styles */
+.chart-container {
+  position: relative;
+  height: 200px;
+  width: 100%;
+}
+
+/* Pie chart specific adjustments */
+.pieChart-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  height: 200px;
+}
+
+/* Radar chart specific adjustments */
+.radarChart-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  height: 200px;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.dark-theme ::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme ::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Responsive Styles - enhanced for better mobile experience */
+@media (max-width: 992px) {
+  .analysis-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 15px;
+  }
+  
+  .button-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .analyze-button, .reset-button {
+    width: 100%;
+    min-width: 0;
+  }
+  
+  .theme-toggle {
+    top: 10px;
+    right: 10px;
+  }
+  
+  .editor-container {
+    height: 250px;
+  }
+  
+  .logout-button-main {
+    bottom: 10px;
+    right: 10px;
+  }
+}
+
+/* Fix for any Material-UI component specifics */
+.MuiSelect-select {
+  padding: 5px 8px !important;
+}
+
+.MuiMenuItem-root {
+  min-height: 35px !important;
+}
+
+/* Fix for chart responsiveness */
+canvas {
+  max-width: 100%;
+}

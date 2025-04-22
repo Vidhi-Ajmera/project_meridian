@@ -1,0 +1,401 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+* {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+body {
+    font-family: 'Orbitron', sans-serif;
+    color: #fff;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+}
+
+/* ---------- Overall Wrapper ---------- */
+
+.contest-wrapper {
+    padding: 20px;
+    opacity: 0.89;
+    margin: 0 auto;
+}
+
+.heading-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.code-icon {
+    font-size: 3rem;
+    margin-top: -20px;
+    color: black;
+}
+
+.contest-header {
+    text-align: center;
+    color: #333;
+    margin: 30px 0 20px;
+}
+
+.contest-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: -10px;
+    color: black;
+    font-weight: 700;
+    margin-top: -30px;
+}
+
+.contest-header p {
+    font-size: 1.1rem;
+    color: black;
+}
+
+/* ---------- Tabs ---------- */
+.tab-container {
+    display: flex;
+    justify-content: center;
+    gap: 10%;
+    margin-bottom: 2.5rem;
+}
+
+.tab-container button{
+    color: black;
+}
+
+.tab-btn {
+    padding: 12px 30px;
+    border-radius: 30px;
+    background: linear-gradient(135deg, rgba(151, 229, 253, 0.95), rgba(54, 167, 253, 0.95));
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    vertical-align: middle;
+    border: 3px solid black;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.tab-btn:hover {
+    transform: translateY(-3px);
+}
+
+.tab-btn.active {
+    background: rgba(54, 167, 253, 0.95);
+    color: rgb(69, 69, 67);
+    border: 3px solid black;
+}
+
+/* ---------- Contest Cards Grid ---------- */
+.contest-container {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(200px, 1fr));
+    gap: 40px;
+    padding: 0 20px;
+}
+
+/* ---------- Individual Contest Card ---------- */
+.contest-card {
+    background: linear-gradient(145deg, rgba(22, 22, 22, 0.95), rgba(10, 10, 10, 0.95));
+    color: beige;
+    border-radius: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.3s ease;
+    overflow: hidden;
+    min-height: 150px; /* Reduced height */
+}
+
+.contest-card:hover {
+    filter: grayscale(80%);
+    transform: scale(1.04);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+/* ---------- Header and Title ---------- */
+.card-header {
+    padding: 1rem 1.2rem;
+}
+
+.card-title {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem; 
+    margin-bottom: 0.8rem;
+}
+
+.card-title h3{
+    font-size: 1.4rem;
+}
+
+.fa-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1.2rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    display: flex;
+    color: rgba(54, 167, 253, 0.95);
+    align-items: center;
+    justify-content: center;
+}
+
+/* ---------- Contest Stats ---------- */
+.contest-stats {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center horizontally */
+    gap: 0.2rem;
+    margin-top: 0.5rem;
+}
+
+.number {
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+
+.label {
+    font-size: 0.9rem;
+    color: #ccc;
+    text-align: center;
+}
+
+/* ---------- Footer ---------- */
+.card-footer {
+    padding: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+}
+
+.view-btn {
+    background: linear-gradient(135deg, rgba(151, 229, 253, 0.95), rgba(54, 167, 253, 0.95));
+    padding: 15px 55px; 
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    border-radius: 30px;
+    font-size: 1rem;
+    color: rgb(52, 51, 51);
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.6s ease-in-out;
+}
+
+.view-btn:hover {
+    background: rgba(54, 167, 253, 1);
+}
+
+/* ---------- Search Bar ---------- */
+.search-container {
+    display: flex;
+    margin-top: -20px;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.search-input {
+    width: 50%;
+    padding: 12px 20px;
+    border-radius: 30px;
+    border: 2px solid rgb(86, 88, 88);
+    font-size: 0.9rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    color: black;
+    align-items: center;
+    margin: 20px 0;
+    gap: 1.4rem;
+  }
+  
+  .pagination-btn {
+    padding: 6px 12px;
+    background-color: #007bff;
+    color: black;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  
+  .pagination-btn:disabled {
+    background-color: #c4c1c1;
+    cursor: not-allowed;
+  }
+
+  /* Modal overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  /* Modal container */
+  .modal {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    color: black;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+  }
+  
+  /* Modal buttons */
+  .modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  
+  .modal-btn {
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 5px;
+  }
+  
+  .confirm {
+    background-color: #4CAF50;
+    color: white;
+  }
+  
+  .cancel {
+    background-color: #f44336;
+    color: white;
+  }
+  
+/* ---------- Responsive Design ---------- */
+@media (max-width: 1200px) {
+    .contest-container {
+        grid-template-columns: repeat(2, minmax(200px, 1fr));
+        gap: 30px;
+    }
+
+    .contest-header h1 {
+        font-size: 2rem;
+    }
+
+    .tab-btn {
+        font-size: 1rem;
+        padding: 10px 25px;
+    }
+
+    .card-title h3 {
+        font-size: 1.2rem;
+    }
+
+    .view-btn {
+        padding: 12px 45px;
+    }
+
+    .search-input {
+        width: 70%;
+    }
+}
+
+@media (max-width: 768px) {
+    .contest-container {
+        grid-template-columns: repeat(1, minmax(200px, 1fr));
+        gap: 20px;
+    }
+
+    .contest-header h1 {
+        font-size: 1.8rem;
+    }
+
+    .tab-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .tab-btn {
+        width: 100%;
+        padding: 8px 20px;
+        font-size: 0.9rem;
+    }
+
+    .view-btn {
+        padding: 10px 40px;
+        font-size: 0.9rem;
+    }
+
+    .card-title h3 {
+        font-size: 1.1rem;
+    }
+
+    .number {
+        font-size: 1.6rem;
+    }
+
+    .search-input {
+        width: 90%;
+        padding: 10px 15px;
+    }
+
+    .modal {
+        max-width: 90%;
+    }
+}
+
+@media (max-width: 480px) {
+    .contest-wrapper {
+        padding: 10px;
+    }
+
+    .contest-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .card-title h3 {
+        font-size: 1rem;
+    }
+
+    .number {
+        font-size: 1.4rem;
+    }
+
+    .label {
+        font-size: 0.8rem;
+    }
+
+    .view-btn {
+        padding: 8px 30px;
+        font-size: 0.8rem;
+    }
+
+    .tab-btn {
+        padding: 6px 15px;
+        font-size: 0.8rem;
+    }
+
+    .pagination-controls {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .pagination-btn {
+        padding: 4px 8px;
+        font-size: 0.8rem;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 8px 12px;
+    }
+}

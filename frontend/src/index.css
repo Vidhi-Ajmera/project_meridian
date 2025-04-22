@@ -1,0 +1,11 @@
+body, html {
+  background-color: #fff;
+}
+
+.container {
+  background-color: #fff;
+}
+
+:global(.MuiContainer-root), :global(.MuiPaper-root) {
+  background-color: inherit;
+}

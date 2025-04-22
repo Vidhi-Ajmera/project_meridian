@@ -1,0 +1,195 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+* {
+    font-family: 'Poppins', sans-serif !important;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+body {
+    background: linear-gradient(135deg, #cecdcf, #c1c1c3);
+    color: #fff;
+    font-family: "Arial", sans-serif;
+}
+
+.create-contest-form {
+    background: #ffffff;
+    padding: 2vw 5vw;
+    border-radius: 1.5vw;
+    margin: 3vw auto;
+    width: 90%;
+    max-width: 700px;
+    box-shadow: 0 0.5vw 1.5vw rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.create-contest-form:hover {
+    transform: translateY(-0.3vw);
+    box-shadow: 0 0.75vw 1.75vw rgba(0, 0, 0, 0.3);
+}
+
+.create-contest-form h2 {
+    text-align: center;
+    margin-bottom: 1.5vw;
+    color: #333;
+    font-size: 2.5vw;
+    font-weight: 600;
+}
+
+.create-contest-form input,
+.create-contest-form select,
+.create-contest-form textarea {
+    width: 100%;
+    padding: 0.6vw 1.2vw;
+    margin: 0.8vw 0;
+    border: 0.15vw solid #ddd;
+    border-radius: 0.8vw;
+    font-size: 1.1vw;
+    background-color: #f9f9f9;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.create-contest-form input:focus,
+.create-contest-form select:focus,
+.create-contest-form textarea:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 0.4vw rgba(0, 123, 255, 0.3);
+}
+
+.create-contest-form button {
+    width: 100%;
+    padding: 0.8vw;
+    margin-top: 1.2vw;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    border: none;
+    border-radius: 0.8vw;
+    font-size: 1.5vw;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.create-contest-form button:hover {
+    transform: translateY(-0.2vw);
+    box-shadow: 0 0.6vw 1.2vw rgba(0, 123, 255, 0.4);
+}
+
+.topic-item {
+    background: linear-gradient(135deg, #e0e0e0, #d3d3d3);
+    padding: 0.8vw 1.2vw;
+    border-radius: 0.6vw;
+    margin: 0.5vw 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.4vw;
+    box-shadow: 0 0.3vw 0.6vw rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.topic-item:hover {
+    transform: translateY(-0.2vw);
+    box-shadow: 0 0.5vw 1vw rgba(0, 0, 0, 0.3);
+}
+
+.topic-item.selected {
+    background: linear-gradient(135deg, #4caf50, #388e3c);
+    color: #fff;
+    border: 0.15vw solid #388e3c;
+}
+
+label {
+    color: #333;
+    font-weight: 600;
+    text-align: left;
+    display: block; /* Ensures it takes full width */
+}
+
+.add-topic-btn,
+.remove-topic-btn {
+    background-color: #28a745;
+    color: black;
+    margin-left: 0.5vw;
+    border: none;
+    border-radius: 0.6vw;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.add-topic-btn:hover {
+    background-color: #218838;
+}
+
+.remove-topic-btn {
+    background-color: black;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    padding: 2px 6px; /* Reduced padding for smaller width */
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin-left: 8px; /* Optional: add spacing from the topic text */
+}
+
+.remove-topic-btn:hover {
+    background-color: #555; /* Slightly lighter shade on hover */
+    transform: scale(1.1); /* Add a subtle zoom effect on hover */
+}
+
+.remove-topic-btn:active {
+    font-size: 12px;
+    background-color: #e60000;
+    transform: scale(0.95);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+
+.topic-list {
+    margin-top: 1vw;
+}
+
+.suggestions-list {
+    list-style-type: disc; /* Changed to disc for bullet points */
+    margin-top: 12%;
+    color: black;
+    padding: 5px;
+    border: 1px solid #474646;
+    max-height: 20%;
+    overflow-y: auto;
+    background-color: rgb(230, 227, 227);
+    position: absolute;
+    width: 60%;
+    z-index: 999;
+}
+
+.suggestion-item {
+    padding: 8px;
+    cursor: pointer;
+    margin-left: 20px; /* Indent bullets */
+}
+
+.suggestion-item:hover {
+    background-color: #f0f0f0;
+}
+
+
+@media (max-width: 768px) {
+    .create-contest-form {
+        width: 90%;
+        padding: 3vw;
+    }
+    .create-contest-form h2 {
+        font-size: 6vw;
+    }
+    .create-contest-form button {
+        font-size: 4vw;
+    }
+    .topic-item {
+        font-size: 3.5vw;
+    }
+    .add-topic-btn,
+    .remove-topic-btn {
+        font-size: 2.5vw;
+    }
+}

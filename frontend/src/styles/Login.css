@@ -1,0 +1,321 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+* {
+  font-family: 'Poppins', sans-serif !important;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.login-container {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+}
+.input-group {
+  display: flex;
+  flex-direction: column;
+  margin: 1rem 0;
+}
+
+.input-group label {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  color: #333;
+  font-weight: 600;
+}
+
+.role-select {
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+  background-color: #fff;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.role-select:focus {
+  border-color: #4f46e5; /* Indigo */
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+.left-panel {
+  display: flex;
+  flex: 0.4;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  padding: 20px;
+  border-right: 2px solid black;
+}
+
+.left-panel lottie-player {
+  width: 100%;
+  height: auto;
+  max-height: 80%;
+}
+
+.right-panel {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: #e5e4e4;
+  padding: 20px;
+  width: 100%;
+  overflow-y: auto;
+}
+
+.login-box {
+  background: rgb(220, 217, 217);
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 450px;
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.login-box:hover {
+  transform: scale(1.02);
+}
+
+.input-group {
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+.input-group label {
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.password-wrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.password-wrapper input {
+  flex: 1;
+  padding-right: 40px;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: #555;
+}
+
+.toggle-password:hover {
+  color: #000;
+  transform: scale(1.15);
+}
+
+.login-btn {
+  width: 100%;
+  padding: 12px;
+  background: #1f1f20;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  margin: 15px 0;
+  transition: 0.3s ease;
+}
+
+.login-btn:hover {
+  background: #a8a5a5;
+  color: black;
+  transform: scale(1.05);
+}
+
+h2 {
+  font-size: 1.5rem;
+  color: black;
+  margin-bottom: 10px;
+}
+
+.register-text {
+  margin-top: 10px;
+  color: black;
+  font-size: 1.1rem;
+}
+
+.register-text a {
+  font-size: 1.2rem;
+  color: #0d0d0e;
+  text-decoration: underline;
+  font-weight: bold;
+}
+
+.register-text a:hover {
+  text-decoration: underline;
+}
+
+.login-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.login-buttons button {
+  font-size: 1rem;
+  padding: 10px 15px;
+  font-weight: bold;
+  border-radius: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+}
+
+.login-buttons button img {
+  width: 20px;
+  height: 20px;
+}
+
+.login-buttons button:hover {
+  transform: scale(1.08);
+  background-color: rgb(224, 221, 221);
+}
+
+.or-separator {
+  display: flex;
+  align-items: center;
+  margin: 15px 0;
+  width: 100%;
+}
+
+.or-separator::before,
+.or-separator::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #070707;
+}
+
+.or-separator span {
+  padding: 0 10px;
+  font-weight: bold;
+  color: #0a0a0a;
+}
+
+.brand-title span {
+  color: black !important;
+}
+
+
+/* Forgot Password Section */
+.forgot-password-text {
+  text-align: right;
+  margin-top: 5px;
+  margin-bottom: 15px;
+}
+
+.forgot-password-btn {
+  background: none;
+  border: none;
+  color: #007bff;
+  font-size: 0.9rem;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.3s ease;
+}
+
+.forgot-password-btn:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+.forgot-password-btn:active {
+  transform: scale(0.95);
+}
+
+/* Media Query for smaller screens */
+@media (max-width: 480px) {
+  .forgot-password-text {
+    text-align: center; /* Center align on small devices */
+  }
+}
+
+@media (max-width: 1024px) {
+  .left-panel {
+    flex: 0.3;
+  }
+  .login-box {
+    max-width: 400px;
+  }
+}
+
+@media (max-width: 768px) {
+  .login-container {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
+  .left-panel {
+    height: 40vh;
+    flex: none;
+    width: 100%;
+    border-right: none;
+    border-bottom: 2px solid black;
+  }
+  .right-panel {
+    height: auto;
+    padding: 20px;
+  }
+  .left-panel lottie-player {
+    width: 60%;
+    height: auto;
+  }
+  .login-box {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .left-panel {
+    display: none;
+  }
+  .right-panel {
+    flex: 1;
+    height: auto;
+    padding: 15px;
+  }
+  .login-box {
+    width: 100%;
+    padding: 15px;
+  }
+  .login-buttons {
+    gap: 5px;
+  }
+  .login-buttons button {
+    font-size: 0.9rem;
+    padding: 8px 10px;
+  }
+}

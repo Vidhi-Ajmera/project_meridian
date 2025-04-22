@@ -1,0 +1,258 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif !important;
+}
+
+.signup-container {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  overflow: hidden;
+}
+
+.left-panel {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  padding: 20px;
+  border-right: 2px solid black;
+}
+
+.left-panel lottie-player {
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+}
+
+.right-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: #e5e4e4;
+  padding: 40px 30px;
+}
+
+.right-panel h1 {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: #3f3845;
+  margin-bottom: 30px;
+  text-align: center;
+  text-shadow: 2px 5px 10px rgba(0, 0, 0, 0.1);
+}
+
+.signup-box {
+  width: 100%;
+  max-width: 450px;
+  background: rgb(220, 217, 217);
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 5px 8px 16px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.signup-box:hover {
+  transform: scale(1.02);
+}
+
+.signup-box h2, .signup-box p{
+  text-align: center;
+}
+
+.input-group {
+  margin-bottom: 18px;
+  width: 100%;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 15px;
+  outline: none;
+  transition: border 0.3s ease;
+}
+
+.input-group input:focus {
+  border-color: #764ba2;
+}
+
+.signup-btn {
+  width: 100%;
+  padding: 14px;
+  background: #1f1f20;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 17px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+.signup-btn:hover {
+  background: #a8a5a5;
+  color: black;
+  transform: scale(1.04);
+}
+
+.login-text {
+  margin-top: 20px;
+}
+
+.login-text a {
+  color: black;
+  font-weight: bold;
+  text-decoration: underline;
+  font-size: 1.1rem;
+}
+
+/* Password Strength Checker Styles */
+.password-strength-container {
+  margin-top: 10px;
+  background: #fff8e1; 
+  border: 1px solid #ffd54f; 
+  padding: 12px 15px;
+  border-radius: 8px;
+  color: #333;
+  font-size: 0.6rem;
+  box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+.password-warning {
+  margin: 0;
+  font-weight: 600;
+  color: #e65100; 
+  margin-bottom: 5px;
+}
+
+.password-rules {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.password-rules li {
+  list-style: disc;
+  margin-bottom: 5px;
+  line-height: 1.1;
+  color: #444;
+}
+
+.password-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.password-wrapper input {
+  padding-right: 45px;
+}
+
+.toggle-password {
+  position: absolute;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: #555;
+  outline: none;
+  transition: color 0.3s ease;
+}
+
+.toggle-password:hover {
+  color: #000;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 1024px) {
+  .right-panel h1 {
+    font-size: 2rem;
+  }
+
+  .signup-box {
+    padding: 25px;
+  }
+
+  .left-panel {
+    padding: 10px;
+  }
+}
+/* Updated CSS */
+.password-info {
+  font-size: 0.9rem;
+  color: black;
+  margin-top: 5px;
+}
+
+.error-message {
+  color: red;
+  font-weight: bold;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+
+@media (max-width: 768px) {
+  .signup-container {
+    flex-direction: column;
+  }
+
+  .left-panel {
+    width: 100%;
+    height: 250px;
+    border-right: none;
+    border-bottom: 2px solid black;
+  }
+
+  .right-panel {
+    padding: 25px 20px;
+  }
+
+  .right-panel h1 {
+    font-size: 1.8rem;
+  }
+
+  .signup-box {
+    max-width: 100%;
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .left-panel {
+    display: none;
+  }
+
+  .right-panel {
+    padding: 20px;
+  }
+
+  .right-panel h1 {
+    font-size: 1.6rem;
+  }
+
+  .signup-box {
+    padding: 18px;
+  }
+
+  .signup-btn {
+    padding: 12px;
+    font-size: 16px;
+  }
+
+  .login-text a {
+    font-size: 1rem;
+  }
+}
