@@ -46,7 +46,7 @@ app = FastAPI(title="Coding Contest Platform API with Plagiarism Detection")
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "*"],  # Use specific domains in production
+    allow_origins=["https://project-frontend-nine-mocha.vercel.app/","http://localhost:3000", "*"],  # Use specific domains in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
