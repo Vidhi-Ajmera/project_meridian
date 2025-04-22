@@ -51,6 +51,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+@app.get("/")
+def read_root():
+    return JSONResponse(content={"message": "Hello from FastAPI on Vercel!"})
 
 # Debug middleware to log requests
 @app.middleware("http")
