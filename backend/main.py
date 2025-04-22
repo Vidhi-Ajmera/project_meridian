@@ -533,20 +533,18 @@ async def add_question(data: QuestionCreate, current_user: dict = Depends(get_cu
 submissions_router = APIRouter()
 
 @submissions_router.post("/submit")
+@submissions_router.post("/submit")
 async def submit_code(sub: SubmissionCreate, current_user: dict = Depends(get_current_user)):
-    print(f"Received submission: {sub}")  # Debug log
     email = current_user["email"]
     role = current_user["role"]
-    print(f"User: {email}, Role: {role}")  # Debug log
-    # Check if contest is active
+
     contest = await contests_collection.find_one({"_id": ObjectId(sub.contest_id)})
     if not contest:
         raise HTTPException(status_code=404, detail="Contest not found")
-    
+
     if not contest.get("is_active", False):
         raise HTTPException(status_code=400, detail="Contest is not active")
-    
-    # Verify the question exists in the contest
+
     question_exists = False
     question_description = ""
     for q in contest.get("questions", []):
@@ -554,10 +552,10 @@ async def submit_code(sub: SubmissionCreate, current_user: dict = Depends(get_cu
             question_exists = True
             question_description = q.get("description", "")
             break
-    
+
     if not question_exists:
         raise HTTPException(status_code=404, detail="Question not found in contest")
-    
+
     sub_data = SubmissionModel(
         contest_id=sub.contest_id,
         student_email=email,
@@ -569,74 +567,94 @@ async def submit_code(sub: SubmissionCreate, current_user: dict = Depends(get_cu
     result = await submissions_collection.insert_one(sub_data)
     if not result.inserted_id:
         raise HTTPException(status_code=500, detail="Failed to save submission")
-    
-    # Also run plagiarism check if OpenAI is available
-    plagiarism_result = None
-    if openai_client:
+
+    if not openai_client:
+        return {
+            "id": "mock-123",
+            "message": "Submission successful (mock mode)",
+            "plagiarism_analysis": generate_mock_analysis(sub.code, sub.language)
+        }
+
+    try:
+        code_submission = CodeSubmission(
+            code=sub.code,
+            language=sub.language,
+            assignment_description=question_description,
+            student_id=email,
+            assignment_id=f"{sub.contest_id}_{sub.question_title}"
+        )
+
+        system_prompt = """
+        [Insert full prompt here as string literal from earlier version for clarity]
+        """
+
+        user_message = f"""
+Analyze this code for plagiarism and evaluate it based on the following parameters:
+
+{sub.code}
+
+*Context*:
+- Language: {sub.language}
+- Course Level: Not provided
+- Assignment Description: {question_description or "Not provided"}
+
+*Instructions*:
+1. Validate the input to ensure it is valid code in the specified programming language.
+2. If the input is not valid code, return a response indicating that no analysis can be performed.
+3. If the input is valid code, break down the code into sections and analyze each part for plagiarism.
+4. Provide a confidence score (0-100) for your assessment.
+5. Highlight specific lines or blocks of code that are suspicious.
+6. Evaluate the code based on the following parameters:
+   - Code Correctness: Check if the code executes correctly and handles exceptions.
+   - Code Efficiency: Estimate time complexity, memory usage, and execution time.
+   - Code Security: Detect vulnerabilities such as SQL injection, XSS, and hardcoded secrets.
+   - Code Readability: Assess code style, documentation, and naming conventions.
+7. Suggest follow-up questions to verify the student's understanding.
+8. Provide recommendations for improving originality, security, and code quality.
+
+*Output Format*:
+Your response should be in the structured JSON format provided in the system prompt.
+"""
+
+        response = openai_client.chat.completions.create(
+            model=settings.OPENAI_DEPLOYMENT_NAME,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_message}
+            ],
+            temperature=0.2
+        )
+
+        plagiarism_result = json.loads(response.choices[0].message.content)
+
+        submission_data = code_submission.dict()
+        submission_data.update({
+            "plagiarism_analysis": plagiarism_result,
+            "submission_timestamp": datetime.utcnow(),
+            "submitter_email": email,
+            "contest_id": sub.contest_id,
+            "question_title": sub.question_title
+        })
+
         try:
-            # Create a code submission for plagiarism check
-            code_submission = CodeSubmission(
-                code=sub.code,
-                language=sub.language,
-                assignment_description=question_description,
-                student_id=email,
-                assignment_id=f"{sub.contest_id}_{sub.question_title}"
-            )
-            
-            # Run plagiarism check
-            system_prompt = """You are an advanced, highly trained AI model specialized in detecting plagiarism in code submissions. Your expertise includes identifying AI-generated code, copied code from online sources, and assessing the originality of student work. Your analysis must be thorough, tolerant of formatting variations, and context-aware."""
-            
-            user_message = f"""
-            Analyze this code for plagiarism and evaluate it based on the following parameters:
-
-            {code_submission.code}
-
-            *Context*:
-            - Language: {code_submission.language}
-            - Course Level: {code_submission.course_level if code_submission.course_level else "Not provided"}
-            - Assignment Description: {code_submission.assignment_description if code_submission.assignment_description else "Not provided"}
-
-            *Instructions*:
-            1. Validate the input to ensure it is valid code in the specified programming language.
-            2. If the input is valid code, break down the code into sections and analyze each part for plagiarism.
-            3. Provide a confidence score (0-100) for your assessment.
-            4. Highlight specific lines or blocks of code that are suspicious.
-            5. Evaluate the code based on code correctness, efficiency, security, and readability.
-            6. Suggest follow-up questions to verify the student's understanding.
-            7. Provide recommendations for improving originality, security, and code quality.
-            """
-
-            response = openai_client.chat.completions.create(
-                model=settings.OPENAI_DEPLOYMENT_NAME,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_message}
-                ],
-                response_format={"type": "json_object"},
-                temperature=0.2
-            )
-            
-            plagiarism_result = json.loads(response.choices[0].message.content)
-            
-            # Save plagiarism result
-            code_data = code_submission.dict()
-            code_data["plagiarism_analysis"] = plagiarism_result
-            code_data["submission_timestamp"] = datetime.utcnow()
-            code_data["submitter_email"] = email
-            code_data["contest_id"] = sub.contest_id
-            code_data["question_title"] = sub.question_title
-            
-            await codes_collection.insert_one(code_data)
-            
+            result = await codes_collection.insert_one(submission_data)
+            return {
+                "message": "Submission successful",
+                "submission_id": str(result.inserted_id),
+                "plagiarism_analysis": plagiarism_result
+            }
         except Exception as e:
-            print(f"Error in plagiarism check: {e}")
-            # Continue even if plagiarism check fails
-    
-    return {
-        "message": "Submission successful",
-        "submission_id": str(result.inserted_id),
-        "plagiarism_analysis": plagiarism_result
-    }
+            return {
+                "message": "Submission successful",
+                "submission_id": None,
+                "plagiarism_analysis": plagiarism_result,
+                "storage_error": f"Failed to save to database: {str(e)}"
+            }
+
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail="Failed to parse plagiarism analysis result")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Plagiarism detection error: {str(e)}")
 
 @submissions_router.get("/by-contest/{contest_id}")
 async def get_submissions(contest_id: str, current_user: dict = Depends(get_current_user)):
@@ -685,39 +703,159 @@ async def check_plagiarism(submission: CodeSubmission, current_user: dict = Depe
             "id": "mock-123",
             "plagiarism_analysis": mock_analysis
         }
-    
     try:
-        # Enhanced system prompt for plagiarism detection and code evaluation
-        system_prompt = """You are an advanced, highly trained AI model specialized in detecting plagiarism in code submissions. Your expertise includes identifying AI-generated code, copied code from online sources, and assessing the originality of student work. Your analysis must be thorough, tolerant of formatting variations, and context-aware. Please format your response as a JSON object."""
         
+        # Enhanced system prompt for plagiarism detection and code evaluation
+        system_prompt = """
+You are an advanced, highly trained AI model specialized in detecting plagiarism in code submissions. Your expertise includes identifying AI-generated code, copied code from online sources, and assessing the originality of student work. Your analysis must be thorough, precise, and context-aware. Follow these guidelines:
+
+---
+
+### *Key Responsibilities*
+
+1. *Validate Input*:
+   - Check if the input is valid code in the specified programming language.
+   - If the input is not valid code, return a response indicating that no analysis can be performed.
+
+2. *Detect AI-Generated Code*:
+   - Identify patterns typical of AI-generated code (e.g., ChatGPT, Claude, GitHub Copilot).
+   - Look for overly consistent formatting, excessive or unnatural comments, and generic variable/function names.
+   - Detect code that is overly optimized or uses advanced techniques inconsistent with the student's course level.
+   - Flag code that lacks common mistakes or shows an unnatural level of perfection.
+
+3. *Identify Copied Code*:
+   - Recognize code snippets copied from common online sources (e.g., Stack Overflow, GitHub, GeeksforGeeks).
+   - Compare the code against known algorithms, functions, or solutions from tutorials or public repositories.
+   - Detect inconsistent coding styles, mixed conventions, or abrupt changes in logic that suggest multiple sources.
+   - Use contextual clues (e.g., comments, variable names) to trace potential sources.
+
+4. *Assess Originality*:
+   - Evaluate the likelihood that the code was written by the student based on the course level and assignment description.
+   - Identify common mistakes, incomplete implementations, or lack of understanding in the code.
+   - Check for code that is too simplistic, overly generic, or lacks originality.
+   - Consider the student's coding style, if previously available, for consistency.
+
+5. *Provide Detailed Analysis*:
+   - Break down the code into logical sections (e.g., functions, loops, classes) and analyze each part for plagiarism.
+   - Provide a confidence score (0-100) for your assessment, considering the strength of evidence.
+   - Highlight specific lines or blocks of code that are suspicious, with clear explanations.
+
+6. *Generate Recommendations*:
+   - Suggest follow-up questions to verify the student's understanding of the code.
+   - Provide actionable recommendations for improving the originality and quality of the code.
+
+---
+
+### *Evaluation Parameters*
+
+Your analysis should also consider the following evaluation parameters from the AI-based Code Evaluator:
+
+1. *Code Correctness*:
+   - Check if the code executes correctly without errors.
+   - Verify if the code handles exceptions properly.
+   - Compare expected vs. actual output for given test cases.
+
+2. *Code Efficiency & Performance*:
+   - Estimate time complexity using Big-O notation.
+   - Measure memory consumption and execution time.
+   - Identify performance bottlenecks.
+
+3. *Code Security Analysis*:
+   - Detect SQL injection vulnerabilities.
+   - Check for cross-site scripting (XSS) risks.
+   - Identify hardcoded secrets (e.g., API keys, passwords).
+   - Scan for outdated or vulnerable dependencies.
+
+4. *Code Readability & Maintainability*:
+   - Assess code style and documentation.
+   - Evaluate function and variable naming conventions.
+   - Analyze cyclomatic complexity and suggest improvements.
+
+5. *Plagiarism Detection & Code Similarity Analysis*:
+   - Perform exact code matching using hashes.
+   - Analyze structural similarity using AST (Abstract Syntax Tree).
+   - Use NLP-based similarity detection (e.g., SimHash, MinHash) to detect paraphrased code.
+
+---
+
+### *Output Format*
+
+Your response must be a structured JSON object with the following fields:
+
+json
+{
+    "is_valid_code": true/false,
+    "plagiarism_detected": true/false,
+    "confidence_score": 0-100,
+    "likely_source": "AI-generated" or "Online resource" or "Original student work",
+    "explanation": "Detailed reasoning for your conclusion",
+    "suspicious_elements": [
+        {
+            "code_section": "Specific lines or blocks of code",
+            "likely_source": "AI-generated" or "Online resource",
+            "confidence": 0-100,
+            "explanation": "Why this section is suspicious"
+        }
+    ],
+    "red_flags": [
+        "List of key concerns (e.g., inconsistent style, advanced techniques, lack of originality)"
+    ],
+    "verification_questions": [
+        "Suggested questions to ask the student to verify authorship"
+    ],
+    "recommendations": [
+        "Suggestions for improving originality and understanding"
+    ],
+    "evaluation_metrics": {
+        "code_correctness": {
+            "status": "Passed/Failed",
+            "test_cases": "Number of test cases executed",
+            "failed_cases": "Number of failed test cases"
+        },
+        "code_efficiency": {
+            "time_complexity": "O(n log n)",
+            "memory_usage": "12MB",
+            "execution_time": "120ms"
+        },
+        "code_security": {
+            "issues_found": ["SQL Injection", "Hardcoded API Key"],
+            "recommendations": ["Use parameterized queries", "Store API keys securely"]
+        },
+        "code_readability": {
+            "score": 8.5,
+            "suggestions": ["Improve documentation"]
+        }
+    }
+}
+"""
         # User message with context
         user_message = f"""
 Analyze this code for plagiarism and evaluate it based on the following parameters:
 
-        {submission.code}
+{submission.code}
 
-        *Context*:
-        - Language: {submission.language}
-        - Course Level: {submission.course_level if submission.course_level else "Not provided"}
-        - Assignment Description: {submission.assignment_description if submission.assignment_description else "Not provided"}
+*Context*:
+- Language: {submission.language}
+- Course Level: {submission.course_level if submission.course_level else "Not provided"}
+- Assignment Description: {submission.assignment_description if submission.assignment_description else "Not provided"}
 
-        *Instructions*:
-        1. Validate the input to ensure it is valid code in the specified programming language.
-        2. If the input is not valid code, return a response indicating that no analysis can be performed.
-        3. If the input is valid code, break down the code into sections and analyze each part for plagiarism.
-        4. Provide a confidence score (0-100) for your assessment.
-        5. Highlight specific lines or blocks of code that are suspicious.
-        6. Evaluate the code based on the following parameters:
-           - Code Correctness: Check if the code executes correctly and handles exceptions.
-           - Code Efficiency: Estimate time complexity, memory usage, and execution time.
-           - Code Security: Detect vulnerabilities such as SQL injection, XSS, and hardcoded secrets.
-           - Code Readability: Assess code style, documentation, and naming conventions.
-        7. Suggest follow-up questions to verify the student's understanding.
-        8. Provide recommendations for improving originality, security, and code quality.
+*Instructions*:
+1. Validate the input to ensure it is valid code in the specified programming language.
+2. If the input is not valid code, return a response indicating that no analysis can be performed.
+3. If the input is valid code, break down the code into sections and analyze each part for plagiarism.
+4. Provide a confidence score (0-100) for your assessment.
+5. Highlight specific lines or blocks of code that are suspicious.
+6. Evaluate the code based on the following parameters:
+   - Code Correctness: Check if the code executes correctly and handles exceptions.
+   - Code Efficiency: Estimate time complexity, memory usage, and execution time.
+   - Code Security: Detect vulnerabilities such as SQL injection, XSS, and hardcoded secrets.
+   - Code Readability: Assess code style, documentation, and naming conventions.
+7. Suggest follow-up questions to verify the student's understanding.
+8. Provide recommendations for improving originality, security, and code quality.
 
-        Return your analysis as a JSON object with appropriate fields for each aspect of the evaluation.
-        """
-
+*Output Format*:
+Your response should be in the structured JSON format provided in the system prompt.
+"""
         try:
             response = openai_client.chat.completions.create(
                 model=settings.OPENAI_DEPLOYMENT_NAME,

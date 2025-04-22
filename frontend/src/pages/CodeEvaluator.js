@@ -326,57 +326,16 @@ const CodeEvaluator = () => {
           },
         }
       );
-
-      // Process the response data
-      let result = response.data;
-
-      // Ensure all expected fields exist with default values if needed
-      if (!result.recommendations) {
-        result.recommendations = [
-          "Add proper documentation and comments to your code",
-          "Use meaningful variable and function names",
-          "Consider code organization and structure",
-        ];
+      if (response.data && response.data.plagiarism_analysis) {
+        setAnalysisResult(response.data.plagiarism_analysis);
+      } else {
+        setAnalysisResult(response.data);
       }
-
-      // Create default metrics if they don't exist
-      if (!result.evaluation_metrics) {
-        result.evaluation_metrics = {
-          code_correctness: {
-            status: "Unknown",
-            test_cases: "N/A",
-            failed_cases: "N/A",
-          },
-          code_efficiency: {
-            time_complexity: "O(n)",
-            memory_usage: "Average",
-            optimization_suggestions: ["Consider algorithm optimization"],
-          },
-          code_security: {
-            issues_found: [],
-            recommendations: ["Follow security best practices"],
-          },
-          code_readability: {
-            score: 7,
-            suggestions: ["Add comments to clarify logic"],
-            improvement_areas: ["Documentation"],
-          },
-        };
-      }
-
-      // Use the full result with default values applied
-      setAnalysisResult(result);
-      console.log("Processed analysis result:", result);
-
-      // Show success message
-      setAlertMessage("Code analysis completed successfully!");
-      setAlertSeverity("success");
-      setAlertOpen(true);
     } catch (error) {
       console.error("Error analyzing code:", error);
       if (error.response) {
         if (error.response.status === 401) {
-          localStorage.removeItem("getToken");
+          localStorage.removeItem("authToken");
           setAlertMessage("Your session has expired. Please log in again.");
           setAlertSeverity("error");
           setAlertOpen(true);
@@ -396,39 +355,7 @@ const CodeEvaluator = () => {
       }
       setAlertSeverity("error");
       setAlertOpen(true);
-
-      // Provide a fallback result on error
-      setAnalysisResult({
-        recommendations: [
-          "Try again with a different code sample",
-          "Check your network connection",
-          "Contact support if the issue persists",
-        ],
-        plagiarism_detected: false,
-        confidence_score: 0,
-        explanation: "Analysis could not be completed due to an error.",
-        evaluation_metrics: {
-          code_correctness: {
-            status: "Unknown",
-            test_cases: "N/A",
-            failed_cases: "N/A",
-          },
-          code_efficiency: {
-            time_complexity: "Unknown",
-            memory_usage: "N/A",
-            optimization_suggestions: ["N/A"],
-          },
-          code_security: {
-            issues_found: [],
-            recommendations: ["N/A"],
-          },
-          code_readability: {
-            score: 5,
-            suggestions: ["N/A"],
-            improvement_areas: ["N/A"],
-          },
-        },
-      });
+      setAnalysisResult({ error: "Failed to analyze code." });
     } finally {
       setLoading(false);
     }
@@ -489,7 +416,6 @@ const CodeEvaluator = () => {
     setCode("");
     setAnalysisResult(null);
   };
-
   const handleBack = () => {
     setLogoutDialogOpen(true);
   };
@@ -499,7 +425,7 @@ const CodeEvaluator = () => {
     navigate(-1);
   };
 
-  // Handle code change with improved language detection
+  // Fixed code: Improved language detection with default fallback
   const handleCodeChange = (value) => {
     setCode(value);
 
@@ -522,11 +448,10 @@ const CodeEvaluator = () => {
     }
   }, [code, language]);
 
-  // Prepare chart data for metrics
   const prepareMetricsChartData = () => {
     if (!analysisResult?.evaluation_metrics) return null;
 
-    const metrics = analysisResult.evaluation_metrics;
+    const { code_readability } = analysisResult.evaluation_metrics;
 
     // Set colors based on dark mode
     const borderColor = darkMode ? "rgb(96, 165, 250)" : "rgb(59, 130, 246)";
@@ -541,10 +466,16 @@ const CodeEvaluator = () => {
         {
           label: "Code Quality",
           data: [
-            metrics.code_readability.score,
-            metrics.code_readability.score * 0.9,
-            metrics.code_efficiency.time_complexity === "O(n)" ? 8 : 6,
-            metrics.code_security.issues_found.length === 0 ? 10 : 5,
+            code_readability.score,
+            code_readability.score * 0.9,
+            analysisResult.evaluation_metrics.code_efficiency
+              .time_complexity === "O(n)"
+              ? 8
+              : 6,
+            analysisResult.evaluation_metrics.code_security.issues_found
+              .length === 0
+              ? 10
+              : 5,
           ],
           backgroundColor: backgroundColor,
           borderColor: borderColor,
@@ -559,11 +490,8 @@ const CodeEvaluator = () => {
     return radarData;
   };
 
-  // Prepare chart data for plagiarism
   const preparePlagiarismChartData = () => {
     if (!analysisResult) return null;
-
-    const confidenceScore = analysisResult.confidence_score || 0;
 
     // Adapt colors for dark mode
     const originalColor = darkMode
@@ -578,7 +506,10 @@ const CodeEvaluator = () => {
       labels: ["Original Code", "Potential Plagiarism"],
       datasets: [
         {
-          data: [100 - confidenceScore, confidenceScore],
+          data: [
+            100 - analysisResult.confidence_score,
+            analysisResult.confidence_score,
+          ],
           backgroundColor: [originalColor[0], plagiarismColor[0]],
           borderColor: [originalColor[1], plagiarismColor[1]],
           borderWidth: 1,
@@ -589,164 +520,604 @@ const CodeEvaluator = () => {
     return pieData;
   };
 
-  // Render analysis result
   const renderAnalysisResult = () => {
     if (!analysisResult) return null;
 
-    // Access metrics safely with defaults
-    const metrics = analysisResult.evaluation_metrics || {
-      code_correctness: {
-        status: "Unknown",
-        test_cases: "N/A",
-        failed_cases: "N/A",
-      },
-      code_efficiency: { time_complexity: "Unknown", memory_usage: "N/A" },
-      code_security: { issues_found: [] },
-      code_readability: { score: 5 },
-    };
+    if (analysisResult.error) {
+      return (
+        <div className="error-message">
+          <Paper
+            elevation={3}
+            sx={{
+              p: 3,
+              mt: 2,
+              backgroundColor: darkMode ? "#2d2d2d" : "#fee2e2",
+              color: darkMode ? "#f87171" : "#b91c1c",
+            }}
+          >
+            <Box display="flex" alignItems="center" gap={2}>
+              <FaExclamationTriangle />
+              <Typography variant="h6">{analysisResult.error}</Typography>
+            </Box>
+          </Paper>
+        </div>
+      );
+    }
 
-    // Prepare chart data
     const pieData = preparePlagiarismChartData();
     const radarData = prepareMetricsChartData();
 
+    // Chart options for dark/light mode
+    const chartOptions = {
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: {
+            color: darkMode ? "#f3f4f6" : "#111827",
+            font: {
+              family: "'Inter', sans-serif",
+            },
+          },
+        },
+        tooltip: {
+          backgroundColor: darkMode ? "#374151" : "#ffffff",
+          titleColor: darkMode ? "#f3f4f6" : "#111827",
+          bodyColor: darkMode ? "#f3f4f6" : "#111827",
+          borderColor: darkMode ? "#6b7280" : "#e5e7eb",
+          borderWidth: 1,
+        },
+      },
+    };
+
     return (
-      <div className="analysis-results">
-        {/* Plagiarism Section */}
-        <Card className="analysis-card">
-          <CardHeader
-            title="Plagiarism Analysis"
-            avatar={<FaExclamationTriangle color="#F59E0B" />}
-          />
-          <CardContent>
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
-                <Typography variant="body1">
-                  <strong>Status:</strong>{" "}
-                  <span
-                    style={{
-                      color: analysisResult.plagiarism_detected
-                        ? "#EF4444"
-                        : "#10B981",
-                      fontWeight: "bold",
+      <>
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={6}>
+            <Card
+              className="dashboard-card"
+              sx={{
+                height: "100%",
+                backgroundColor: darkMode ? "#1f2937" : "white",
+                color: darkMode ? "#f3f4f6" : "#111827",
+                borderColor: darkMode ? "#374151" : "#e5e7eb",
+                boxShadow: darkMode
+                  ? "0 4px 6px rgba(0, 0, 0, 0.2)"
+                  : "0 4px 6px rgba(0, 0, 0, 0.1)",
+              }}
+            >
+              <CardHeader
+                title="Plagiarism Assessment"
+                titleTypographyProps={{
+                  variant: "h6",
+                  color: darkMode ? "#f3f4f6" : "inherit",
+                  fontWeight: 600,
+                }}
+              />
+              <CardContent>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} md={6}>
+                    <Box sx={{ mb: 2 }}>
+                      <Typography
+                        variant="body1"
+                        color={darkMode ? "#f3f4f6" : "inherit"}
+                        sx={{ mb: 1 }}
+                      >
+                        <strong>Plagiarism Detected:</strong>{" "}
+                        {analysisResult.plagiarism_detected ? (
+                          <span
+                            style={{ color: darkMode ? "#f87171" : "#ef4444" }}
+                          >
+                            Yes
+                          </span>
+                        ) : (
+                          <span
+                            style={{ color: darkMode ? "#34d399" : "#10b981" }}
+                          >
+                            No
+                          </span>
+                        )}
+                      </Typography>
+                      <Typography
+                        color={darkMode ? "#f3f4f6" : "inherit"}
+                        sx={{ mb: 1 }}
+                      >
+                        <strong>Confidence Score:</strong>{" "}
+                        {analysisResult.confidence_score}%
+                      </Typography>
+                      <Typography color={darkMode ? "#f3f4f6" : "inherit"}>
+                        <strong>Likely Source:</strong>{" "}
+                        {analysisResult.likely_source}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Box sx={{ height: 200 }}>
+                      {pieData && <Pie data={pieData} options={chartOptions} />}
+                    </Box>
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Card
+              className="dashboard-card"
+              sx={{
+                height: "100%",
+                backgroundColor: darkMode ? "#1f2937" : "white",
+                color: darkMode ? "#f3f4f6" : "#111827",
+                borderColor: darkMode ? "#374151" : "#e5e7eb",
+                boxShadow: darkMode
+                  ? "0 4px 6px rgba(0, 0, 0, 0.2)"
+                  : "0 4px 6px rgba(0, 0, 0, 0.1)",
+              }}
+            >
+              <CardHeader
+                title="Code Quality Metrics"
+                titleTypographyProps={{
+                  variant: "h6",
+                  color: darkMode ? "#f3f4f6" : "inherit",
+                  fontWeight: 600,
+                }}
+              />
+              <CardContent>
+                {radarData ? (
+                  <Box height={200}>
+                    <Radar data={radarData} options={chartOptions} />
+                  </Box>
+                ) : (
+                  <Typography color={darkMode ? "#f3f4f6" : "inherit"}>
+                    No metrics data available
+                  </Typography>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12}>
+            <Card
+              className="dashboard-card"
+              sx={{
+                backgroundColor: darkMode ? "#1f2937" : "white",
+                color: darkMode ? "#f3f4f6" : "#111827",
+                borderColor: darkMode ? "#374151" : "#e5e7eb",
+                boxShadow: darkMode
+                  ? "0 4px 6px rgba(0, 0, 0, 0.2)"
+                  : "0 4px 6px rgba(0, 0, 0, 0.1)",
+              }}
+            >
+              <CardHeader
+                title="Analysis Explanation"
+                titleTypographyProps={{
+                  variant: "h6",
+                  color: darkMode ? "#f3f4f6" : "inherit",
+                  fontWeight: 600,
+                }}
+              />
+              <CardContent>
+                <Typography color={darkMode ? "#f3f4f6" : "inherit"}>
+                  {analysisResult.explanation}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {analysisResult.suspicious_elements &&
+            analysisResult.suspicious_elements.length > 0 && (
+              <Grid item xs={12}>
+                <Card
+                  className="dashboard-card"
+                  sx={{
+                    backgroundColor: darkMode ? "#1f2937" : "white",
+                    color: darkMode ? "#f3f4f6" : "#111827",
+                    borderColor: darkMode ? "#374151" : "#e5e7eb",
+                    boxShadow: darkMode
+                      ? "0 4px 6px rgba(0, 0, 0, 0.2)"
+                      : "0 4px 6px rgba(0, 0, 0, 0.1)",
+                  }}
+                >
+                  <CardHeader
+                    title="Suspicious Elements"
+                    titleTypographyProps={{
+                      variant: "h6",
+                      color: darkMode ? "#f3f4f6" : "inherit",
+                      fontWeight: 600,
                     }}
-                  >
-                    {analysisResult.plagiarism_detected
-                      ? "Potential Plagiarism"
-                      : "Original Work"}
-                  </span>
-                </Typography>
-                <Typography variant="body1">
-                  <strong>Confidence:</strong>{" "}
-                  {analysisResult.confidence_score || 0}%
-                </Typography>
-                <Typography variant="body1">
-                  <strong>Explanation:</strong>{" "}
-                  {analysisResult.explanation ||
-                    "No detailed explanation available"}
-                </Typography>
+                    avatar={
+                      <FaExclamationTriangle
+                        color={darkMode ? "#fbbf24" : "#f59e0b"}
+                      />
+                    }
+                  />
+                  <CardContent>
+                    <Grid container spacing={2}>
+                      {analysisResult.suspicious_elements.map(
+                        (element, index) => (
+                          <Grid item xs={12} md={6} key={index}>
+                            <Paper
+                              elevation={2}
+                              sx={{
+                                p: 2,
+                                backgroundColor: darkMode
+                                  ? "#374151"
+                                  : "#fff7ed",
+                                borderLeft: `4px solid ${
+                                  darkMode ? "#fbbf24" : "#f59e0b"
+                                }`,
+                                color: darkMode ? "#f3f4f6" : "inherit",
+                              }}
+                            >
+                              <Typography
+                                variant="subtitle1"
+                                sx={{
+                                  fontWeight: "bold",
+                                  mb: 1,
+                                  color: darkMode ? "#f3f4f6" : "inherit",
+                                }}
+                              >
+                                Element {index + 1}
+                              </Typography>
+                              <Box
+                                sx={{
+                                  backgroundColor: darkMode
+                                    ? "#1f2937"
+                                    : "#f9fafb",
+                                  p: 1,
+                                  borderRadius: 1,
+                                  mb: 1,
+                                  maxHeight: "150px",
+                                  overflow: "auto",
+                                }}
+                              >
+                                <pre className={darkMode ? "dark-pre" : ""}>
+                                  {element.code_section}
+                                </pre>
+                              </Box>
+                              <Typography
+                                color={darkMode ? "#f3f4f6" : "inherit"}
+                                sx={{ mb: 1 }}
+                              >
+                                <strong>Likely Source:</strong>{" "}
+                                {element.likely_source}
+                              </Typography>
+                              <Typography
+                                color={darkMode ? "#f3f4f6" : "inherit"}
+                                sx={{ mb: 1 }}
+                              >
+                                <strong>Confidence:</strong>{" "}
+                                {element.confidence}%
+                              </Typography>
+                              <Typography
+                                color={darkMode ? "#f3f4f6" : "inherit"}
+                              >
+                                <strong>Explanation:</strong>{" "}
+                                {element.explanation}
+                              </Typography>
+                            </Paper>
+                          </Grid>
+                        )
+                      )}
+                    </Grid>
+                  </CardContent>
+                </Card>
               </Grid>
-              <Grid item xs={12} md={6}>
-                <div style={{ height: 200 }}>
-                  <Pie data={pieData} options={chartOptions} />
-                </div>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
+            )}
 
-        {/* Code Quality Metrics */}
-        <Card className="analysis-card">
-          <CardHeader
-            title="Code Quality Evaluation"
-            avatar={<FaChartPie color="#3B82F6" />}
-          />
-          <CardContent>
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
-                <div style={{ height: 300 }}>
-                  <Radar data={radarData} options={chartOptions} />
-                </div>
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <Typography variant="h6">Detailed Metrics</Typography>
-                <TableContainer component={Paper}>
-                  <Table>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell>
-                          <strong>Correctness</strong>
-                        </TableCell>
-                        <TableCell>
-                          {metrics.code_correctness?.status || "Unknown"}
-                          {metrics.code_correctness?.failed_cases &&
-                            ` (${metrics.code_correctness.failed_cases} failed)`}
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <strong>Efficiency</strong>
-                        </TableCell>
-                        <TableCell>
-                          {metrics.code_efficiency?.time_complexity ||
-                            "Unknown"}
-                          {metrics.code_efficiency?.optimization_suggestions
-                            ?.length > 0 &&
-                            ` - ${metrics.code_efficiency.optimization_suggestions[0]}`}
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <strong>Security</strong>
-                        </TableCell>
-                        <TableCell>
-                          {metrics.code_security?.issues_found?.length > 0
-                            ? `${metrics.code_security.issues_found.length} issues found`
-                            : "No major issues"}
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <strong>Readability</strong>
-                        </TableCell>
-                        <TableCell>
-                          Score: {metrics.code_readability?.score || "N/A"}/10
-                          {metrics.code_readability?.improvement_areas?.length >
-                            0 &&
-                            ` - ${metrics.code_readability.improvement_areas[0]}`}
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
+          {analysisResult.evaluation_metrics && (
+            <Grid item xs={12}>
+              <Card
+                className="dashboard-card"
+                sx={{
+                  backgroundColor: darkMode ? "#1f2937" : "white",
+                  color: darkMode ? "#f3f4f6" : "#111827",
+                  borderColor: darkMode ? "#374151" : "#e5e7eb",
+                  boxShadow: darkMode
+                    ? "0 4px 6px rgba(0, 0, 0, 0.2)"
+                    : "0 4px 6px rgba(0, 0, 0, 0.1)",
+                }}
+              >
+                <CardHeader
+                  title="Detailed Code Evaluation"
+                  titleTypographyProps={{
+                    variant: "h6",
+                    color: darkMode ? "#f3f4f6" : "inherit",
+                    fontWeight: 600,
+                  }}
+                  avatar={
+                    <FaChartPie color={darkMode ? "#60a5fa" : "#3b82f6"} />
+                  }
+                />
+                <CardContent>
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} sm={6} md={3}>
+                      <Paper
+                        elevation={2}
+                        sx={{
+                          p: 2,
+                          backgroundColor:
+                            analysisResult.evaluation_metrics.code_correctness
+                              .status === "Passed"
+                              ? darkMode
+                                ? "#064e3b"
+                                : "#ecfdf5"
+                              : darkMode
+                              ? "#7f1d1d"
+                              : "#fef2f2",
+                          height: "100%",
+                        }}
+                      >
+                        <Typography
+                          variant="subtitle1"
+                          sx={{
+                            fontWeight: "bold",
+                            mb: 1,
+                            color: darkMode ? "#f3f4f6" : "inherit",
+                          }}
+                        >
+                          Code Correctness
+                        </Typography>
+                        <Typography
+                          sx={{
+                            color:
+                              analysisResult.evaluation_metrics.code_correctness
+                                .status === "Passed"
+                                ? darkMode
+                                  ? "#34d399"
+                                  : "#059669"
+                                : darkMode
+                                ? "#f87171"
+                                : "#dc2626",
+                            fontWeight: 600,
+                          }}
+                        >
+                          <strong>Status:</strong>{" "}
+                          {
+                            analysisResult.evaluation_metrics.code_correctness
+                              .status
+                          }
+                        </Typography>
+                      </Paper>
+                    </Grid>
 
-        {/* Recommendations */}
-        <Card className="analysis-card">
-          <CardHeader
-            title="Improvement Recommendations"
-            avatar={<FaList color="#10B981" />}
-          />
-          <CardContent>
-            <List>
-              {(analysisResult.recommendations || []).map((rec, index) => (
-                <ListItem key={index}>
-                  <ListItemAvatar>
-                    <Avatar sx={{ bgcolor: "#ECFDF5", color: "#10B981" }}>
-                      <FaCheckCircle />
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText primary={rec} />
-                </ListItem>
-              ))}
-            </List>
-          </CardContent>
-        </Card>
-      </div>
+                    <Grid item xs={12} sm={6} md={3}>
+                      <Paper
+                        elevation={2}
+                        sx={{
+                          p: 2,
+                          backgroundColor: darkMode ? "#172554" : "#eff6ff",
+                          height: "100%",
+                          color: darkMode ? "#f3f4f6" : "inherit",
+                        }}
+                      >
+                        <Typography
+                          variant="subtitle1"
+                          sx={{
+                            fontWeight: "bold",
+                            mb: 1,
+                            color: darkMode ? "#f3f4f6" : "inherit",
+                          }}
+                        >
+                          Code Efficiency
+                        </Typography>
+                        <Typography color={darkMode ? "#f3f4f6" : "inherit"}>
+                          <strong>Time Complexity:</strong>{" "}
+                          {
+                            analysisResult.evaluation_metrics.code_efficiency
+                              .time_complexity
+                          }
+                        </Typography>
+                      </Paper>
+                    </Grid>
+
+                    <Grid item xs={12} sm={6} md={3}>
+                      <Paper
+                        elevation={2}
+                        sx={{
+                          p: 2,
+                          backgroundColor:
+                            analysisResult.evaluation_metrics.code_security
+                              .issues_found.length === 0
+                              ? darkMode
+                                ? "#064e3b"
+                                : "#ecfdf5"
+                              : darkMode
+                              ? "#7f1d1d"
+                              : "#fef2f2",
+                          height: "100%",
+                          color: darkMode ? "#f3f4f6" : "inherit",
+                        }}
+                      >
+                        <Typography
+                          variant="subtitle1"
+                          sx={{
+                            fontWeight: "bold",
+                            mb: 1,
+                            color: darkMode ? "#f3f4f6" : "inherit",
+                          }}
+                        >
+                          Code Security
+                        </Typography>
+                        {analysisResult.evaluation_metrics.code_security
+                          .issues_found.length > 0 ? (
+                          <>
+                            <Typography
+                              sx={{
+                                color: darkMode ? "#f87171" : "#dc2626",
+                                mb: 1,
+                              }}
+                            >
+                              <strong>
+                                Issues Found:{" "}
+                                {
+                                  analysisResult.evaluation_metrics
+                                    .code_security.issues_found.length
+                                }
+                              </strong>
+                            </Typography>
+                            <Box
+                              sx={{
+                                maxHeight: "150px",
+                                overflow: "auto",
+                                pr: 1,
+                              }}
+                            >
+                              <ul
+                                style={{
+                                  color: darkMode ? "#f3f4f6" : "inherit",
+                                  paddingLeft: "20px",
+                                }}
+                              >
+                                {analysisResult.evaluation_metrics.code_security.issues_found.map(
+                                  (issue, i) => (
+                                    <li key={i}>{issue}</li>
+                                  )
+                                )}
+                              </ul>
+                            </Box>
+                          </>
+                        ) : (
+                          <Typography
+                            sx={{ color: darkMode ? "#34d399" : "#059669" }}
+                          >
+                            <strong>No security issues found</strong>
+                          </Typography>
+                        )}
+                      </Paper>
+                    </Grid>
+
+                    <Grid item xs={12} sm={6} md={3}>
+                      <Paper
+                        elevation={2}
+                        sx={{
+                          p: 2,
+                          backgroundColor: darkMode ? "#1e3a8a" : "#eef2ff",
+                          height: "100%",
+                          color: darkMode ? "#f3f4f6" : "inherit",
+                        }}
+                      >
+                        <Typography
+                          variant="subtitle1"
+                          sx={{
+                            fontWeight: "bold",
+                            mb: 1,
+                            color: darkMode ? "#f3f4f6" : "inherit",
+                          }}
+                        >
+                          Code Readability
+                        </Typography>
+                        <Typography color={darkMode ? "#f3f4f6" : "inherit"}>
+                          <strong>Score:</strong>{" "}
+                          {
+                            analysisResult.evaluation_metrics.code_readability
+                              .score
+                          }
+                          /10
+                        </Typography>
+                        <Box
+                          sx={{
+                            mt: 1,
+                            width: "100%",
+                            bgcolor: darkMode ? "#475569" : "#e2e8f0",
+                            borderRadius: 1,
+                            height: 10,
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              width: `${
+                                analysisResult.evaluation_metrics
+                                  .code_readability.score * 10
+                              }%`,
+                              bgcolor:
+                                analysisResult.evaluation_metrics
+                                  .code_readability.score >= 7
+                                  ? darkMode
+                                    ? "#34d399"
+                                    : "#10b981"
+                                  : analysisResult.evaluation_metrics
+                                      .code_readability.score >= 4
+                                  ? darkMode
+                                    ? "#fbbf24"
+                                    : "#f59e0b"
+                                  : darkMode
+                                  ? "#f87171"
+                                  : "#ef4444",
+                              height: "100%",
+                              borderRadius: 1,
+                            }}
+                          />
+                        </Box>
+                      </Paper>
+                    </Grid>
+                  </Grid>
+                </CardContent>
+              </Card>
+            </Grid>
+          )}
+
+          <Grid item xs={12}>
+            <Card
+              className="dashboard-card"
+              sx={{
+                backgroundColor: darkMode ? "#1f2937" : "white",
+                color: darkMode ? "#f3f4f6" : "#111827",
+                borderColor: darkMode ? "#374151" : "#e5e7eb",
+                boxShadow: darkMode
+                  ? "0 4px 6px rgba(0, 0, 0, 0.2)"
+                  : "0 4px 6px rgba(0, 0, 0, 0.1)",
+              }}
+            >
+              <CardHeader
+                title="Improvement Recommendations"
+                titleTypographyProps={{
+                  variant: "h6",
+                  color: darkMode ? "#f3f4f6" : "inherit",
+                  fontWeight: 600,
+                }}
+                avatar={<FaList color={darkMode ? "#34d399" : "#10b981"} />}
+              />
+              <CardContent>
+                <Grid container spacing={2}>
+                  {analysisResult.recommendations.map((rec, index) => (
+                    <Grid item xs={12} sm={6} md={4} key={index}>
+                      <Paper
+                        elevation={2}
+                        sx={{
+                          p: 2,
+                          backgroundColor: darkMode ? "#374151" : "#f0fdf4",
+                          height: "100%",
+                          display: "flex",
+                          alignItems: "flex-start",
+                          gap: 1,
+                          color: darkMode ? "#f3f4f6" : "inherit",
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            color: darkMode ? "#34d399" : "#10b981",
+                            pt: 0.5,
+                          }}
+                        >
+                          <FaCheckCircle />
+                        </Box>
+                        <Typography color={darkMode ? "#f3f4f6" : "inherit"}>
+                          {rec}
+                        </Typography>
+                      </Paper>
+                    </Grid>
+                  ))}
+                </Grid>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+      </>
     );
   };
+
+  // Theme configuration for MUI components
+  // const themeStyles = { ... }; // Removed unused themeStyles
 
   return (
     <>
@@ -777,7 +1148,7 @@ const CodeEvaluator = () => {
         />
       </div>
       <div className="language-display" style={{ display: "inline-block" }}>
-        {language && language !== "none" ? (
+        {language ? (
           `Detected language: ${
             language === "cpp"
               ? "C++"
@@ -785,33 +1156,14 @@ const CodeEvaluator = () => {
           }`
         ) : (
           <span>
-            {code.trim() ? (
-              <>
-                <CircularProgress
-                  size={18}
-                  style={{
-                    marginRight: "8px",
-                    color: darkMode ? "#f3f4f6" : "#6b7280",
-                  }}
-                />
-                Detecting Language...
-              </>
-            ) : (
-              "No code entered"
-            )}
+            <CircularProgress size={18} style={{ color: "beige" }} />
+            {code.trim() ? "Detecting Language..." : "No code entered"}
           </span>
         )}
 
         {/* Tooltip positioned below */}
-        <div
-          className="tooltip-container"
-          style={{
-            marginLeft: "8px",
-            display: "inline-block",
-            position: "relative",
-          }}
-        >
-          <Info size={16} color={darkMode ? "#f3f4f6" : "#6b7280"} />
+        <div className="tooltip-container" style={{ marginLeft: "8px" }}>
+          <Info size={16} />
           <div className="tooltip-text">
             This platform only supports C++, Java, JavaScript, Python.
           </div>
@@ -828,8 +1180,6 @@ const CodeEvaluator = () => {
             color: darkMode ? "#f3f4f6" : "#111827",
             textAlign: "center",
             width: "100%", // Ensures it spans the full width for proper centering
-            cursor: "pointer",
-            marginBottom: "20px",
           }}
         >
           <FaCode
@@ -852,14 +1202,15 @@ const CodeEvaluator = () => {
             <Suspense fallback={<div>Loading Editor...</div>}>
               <CodeMirror
                 value={code}
-                extensions={
-                  language && language !== "none"
-                    ? [languageExtensions[language]]
-                    : []
-                }
+                extensions={language ? [languageExtensions[language]] : []}
                 onChange={handleCodeChange}
-                placeholder="// Write or paste your code here to be analyzed"
+                placeholder={
+                  language
+                    ? "// Write or paste your code here to be analyzed"
+                    : "// Select a language first"
+                }
                 theme={darkMode ? oneDark : "light"}
+                readOnly={!language}
                 style={{
                   fontSize: "1rem",
                   height: "100%",
@@ -895,7 +1246,6 @@ const CodeEvaluator = () => {
               {renderAnalysisResult()}
             </div>
           )}
-
           <div className="button-container">
             <div className="top-buttons">
               <Button
@@ -914,7 +1264,7 @@ const CodeEvaluator = () => {
                   <Button
                     className="analyze-button"
                     onClick={handleAnalyze}
-                    disabled={loading || !code.trim()}
+                    disabled={loading}
                     variant="contained"
                     color="primary"
                   >
@@ -934,17 +1284,16 @@ const CodeEvaluator = () => {
             <div className="logout-container">
               <Button
                 className="logout-button"
-                onClick={handleBack}
+                onClick={handleBack} // Changed function from handleLogout to handleBack
                 variant="contained"
                 color="error"
-                startIcon={<FaArrowLeft />}
+                startIcon={<FaArrowLeft />} // Changed icon to a back arrow
                 fullWidth
               >
                 Go Back
               </Button>
             </div>
           </div>
-
           <Dialog
             open={logoutDialogOpen}
             onClose={() => setLogoutDialogOpen(false)}
@@ -955,23 +1304,27 @@ const CodeEvaluator = () => {
               },
             }}
           >
-            <DialogTitle>Go Back Confirmation</DialogTitle>
+            <DialogTitle sx={{ color: darkMode ? "#e2e8f0" : "#000000" }}>
+              Go Back Confirmation
+            </DialogTitle>{" "}
+            {/* Updated title */}
             <DialogContent>
               <DialogContentText
-                sx={{ color: darkMode ? "#e2e8f0" : "inherit" }}
+                sx={{ color: darkMode ? "#e2e8f0" : "#000000" }}
               >
-                ↩ Are you sure you want to go back?
+                ↩ Are you sure you want to go back?{" "}
+                {/* Added left arrow curving in emoji */}
               </DialogContentText>
             </DialogContent>
             <DialogActions>
               <Button onClick={() => setLogoutDialogOpen(false)}>Cancel</Button>
               <Button
-                onClick={confirmBack}
+                onClick={confirmBack} // Changed function from confirmLogout to confirmBack
                 color="error"
                 variant="contained"
-                className="logout-button"
+                className="logout-button" // Kept className unchanged
               >
-                Go Back
+                Go Back {/* Updated button text */}
               </Button>
             </DialogActions>
           </Dialog>
