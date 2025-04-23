@@ -1,4 +1,10 @@
-from backend.main import app  # Adjust import based on structure
+from fastapi import FastAPI
+from mangum import Mangum  # AWS Lambda adapter
 
-# Vercel uses `app` as entry point
-# This file will be served as the function handler
+app = FastAPI()
+
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
+
+handler = Mangum(app)
