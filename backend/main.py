@@ -19,8 +19,7 @@ from mangum import Mangum
 import bcrypt
 import uvicorn
 # Import simple callable middleware instead of BaseHTTPMiddleware
-from starlette.middleware import Middleware
-
+from starlette.middleware.base import BaseHTTPMiddleware
 # Load environment variables
 load_dotenv()
 
@@ -38,16 +37,20 @@ class Settings:
     OPENAI_DEPLOYMENT_NAME = os.getenv("OPENAI_DEPLOYMENT_NAME", "gpt-35-turbo")
 
 settings = Settings()
-
+class LoggingMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        print(f"Request: {request.method} {request.url}")
+        response = await call_next(request)
+        print(f"Response Status: {response.status_code}")
+        return response
 # =========================
 # FastAPI Application Setup - DEFINE APP ONCE
 # =========================
 app = FastAPI(title="Coding Contest Platform API with Plagiarism Detection")
-
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://project-frontend-nine-mocha.vercel.app/","http://localhost:3000", "*"],  # Use specific domains in production
+    allow_origins=["https://project-frontend-nine-mocha.vercel.app/", "http://localhost:3000", "*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -57,14 +60,16 @@ app.add_middleware(
 #     return JSONResponse(content={"message": "Hello from FastAPI on Vercel!"})
 
 
+# Add your custom logging middleware next
+app.add_middleware(LoggingMiddleware)
 # Debug middleware to log requests - using a simple middleware function instead of class
+# Replace this:
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     print(f"Request: {request.method} {request.url}")
     response = await call_next(request)
     print(f"Response Status: {response.status_code}")
     return response
-
 # =========================
 # Database Setup
 # =========================
@@ -925,7 +930,7 @@ app.include_router(submissions_router, prefix="/submissions", tags=["Submissions
 app.include_router(plagiarism_router, prefix="/plagiarism", tags=["Plagiarism"])
 
 # For Vercel/AWS Lambda deployment
-handler = Mangum(app)
+handler = Mangum(app, lifespan="off")  
 
 # For running locally
 if __name__ == "__main__":
