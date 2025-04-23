@@ -18,10 +18,12 @@ from dotenv import load_dotenv
 from mangum import Mangum
 import bcrypt
 import uvicorn
-# Import simple callable middleware instead of BaseHTTPMiddleware
-from starlette.middleware.base import BaseHTTPMiddleware
 # Load environment variables
 load_dotenv()
+
+
+
+
 
 # =========================
 # Config Settings
@@ -37,12 +39,7 @@ class Settings:
     OPENAI_DEPLOYMENT_NAME = os.getenv("OPENAI_DEPLOYMENT_NAME", "gpt-35-turbo")
 
 settings = Settings()
-class LoggingMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        print(f"Request: {request.method} {request.url}")
-        response = await call_next(request)
-        print(f"Response Status: {response.status_code}")
-        return response
+
 # =========================
 # FastAPI Application Setup - DEFINE APP ONCE
 # =========================
@@ -61,7 +58,7 @@ app.add_middleware(
 
 
 # Add your custom logging middleware next
-app.add_middleware(LoggingMiddleware)
+# app.add_middleware(LoggingMiddleware)
 # Debug middleware to log requests - using a simple middleware function instead of class
 # Replace this:
 @app.middleware("http")
