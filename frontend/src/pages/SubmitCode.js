@@ -4,7 +4,7 @@ import { getToken } from "../utils/auth";
 import { useParams, useNavigate } from "react-router-dom";
 import "../styles/SubmissionViewer.css";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
+const API_URL = process.env.REACT_APP_API_URL || "https://codeevaluator.azurewebsites.net";
 
 const Submissions = () => {
   const { contestId } = useParams();

@@ -140,7 +140,7 @@ const chartOptions = {
   },
 };
 
-const API_URL = `http://localhost:8000/plagiarism/check`; // Ensure this matches your backend URL
+const API_URL = `https://codeevaluator.azurewebsites.net/plagiarism/check`; // Ensure this matches your backend URL
 
 const languageOptions = [
   { label: "None", value: "none" },
@@ -243,11 +243,14 @@ const CodeEvaluator = () => {
     }
 
     try {
-      const response = await axios.get(`https://localhost:8000/protected`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axios.get(
+        `https://codeevaluator.azurewebsites.net/protected`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       console.log("Protected Data:", response.data);
       setIsAuthenticated(true);

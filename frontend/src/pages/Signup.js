@@ -40,7 +40,7 @@ const SignUpPage = () => {
     setError("");
 
     try {
-      const response = await axios.post("http://localhost:8000/auth/signup", {
+      const response = await axios.post("https://codeevaluator.azurewebsites.net/auth/signup", {
         username: username,
         email: email,
         password: password,

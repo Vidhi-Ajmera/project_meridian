@@ -23,7 +23,7 @@ const LoginPage = () => {
     localStorage.setItem("authToken", getToken);
 
     try {
-      const response = await axios.post(`http://localhost:8000/auth/login`, {
+      const response = await axios.post(`https://codeevaluator.azurewebsites.net/auth/login`, {
         email,
         password,
         role,
