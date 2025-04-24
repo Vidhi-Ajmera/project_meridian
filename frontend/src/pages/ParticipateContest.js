@@ -45,7 +45,7 @@ function ParticipateContest() {
 
   // Modify your axios instance
   const api = axios.create({
-    baseURL: "http://localhost:8000/",
+    baseURL: "https://codeevaluator.azurewebsites.net/",
   });
 
   // Add request interceptor to include token
@@ -86,7 +86,7 @@ function ParticipateContest() {
         }
 
         const response = await axios.get(
-          `http://localhost:8000/contest/active`,
+          `https://codeevaluator.azurewebsites.net/contest/active`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }

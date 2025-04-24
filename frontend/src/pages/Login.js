@@ -21,11 +21,14 @@ const LoginPage = () => {
     setError("");
 
     try {
-      const response = await axios.post(`http://localhost:8000/auth/login`, {
-        email,
-        password,
-        role,
-      });
+      const response = await axios.post(
+        `https://codeevaluator.azurewebsites.net/auth/login`,
+        {
+          email,
+          password,
+          role,
+        }
+      );
 
       if (response.data.access_token) {
         const { access_token, username, role, email } = response.data;
