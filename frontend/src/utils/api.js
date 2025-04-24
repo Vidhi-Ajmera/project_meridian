@@ -9,6 +9,20 @@ const api = axios.create({
   },
 });
 
+// Update the API request interceptor to include the token
+api.interceptors.request.use(
+  (config) => {
+    const token = getToken();
+    if (token) {
+      config.headers["Authorization"] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 export const signup = async (data) => {
   try {
     const response = await api.post("/auth/signup", data);
@@ -32,16 +46,11 @@ export const login = async (data) => {
   }
 };
 
-export const createContest = async (token, data) => {
+export const createContest = async (data) => {
   try {
     const response = await api.post(
       `/contest/create?teacher_email=${data.teacher_email}`,
-      data,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
+      data
     );
     return response.data;
   } catch (err) {

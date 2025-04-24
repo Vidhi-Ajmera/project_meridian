@@ -14,23 +14,20 @@ import ParticipateContest from "./pages/ParticipateContest";
 import CreateContest from "./pages/CreateContest";
 import MyContests from "./pages/MyContest";
 import SubmitCode from "./pages/SubmitCode";
-
-// import Submissions from "./components/Submissions"; // Import the new component
 import { getToken, getUserInfo } from "./utils/auth";
 
 // ✅ Utility function to check authentication
 const isAuthenticated = () => {
-  const token = getToken(); // ✅ Correct usage
+  const token = getToken();
   return token && token !== "null" && token !== "undefined";
 };
 
 // ✅ Private route wrapper
 const PrivateRoute = ({ element }) => {
-  return isAuthenticated() ? element : <Navigate to="/login" />;
+  return isAuthenticated() ? element : <Navigate to="/login" replace />;
 };
 
 function App() {
-  const token = getToken(); // ✅ Correct usage
   const userInfo = getUserInfo();
   const userRole = userInfo?.role || null;
 
@@ -46,9 +43,7 @@ function App() {
         />
         <Route
           path="/dashboard"
-          element={
-            token ? <Dashboard userRole={userRole} /> : <Navigate to="/login" />
-          }
+          element={<PrivateRoute element={<Dashboard userRole={userRole} />} />}
         />
         <Route
           path="/participate-contest"
@@ -62,12 +57,10 @@ function App() {
           path="/my-contests"
           element={<PrivateRoute element={<MyContests />} />}
         />
-        {/* <Route
+        <Route
           path="/submissions/:contestId"
-          element={<ProtectedRoute element={<Submissions />} />}
-        /> */}
-
-        <Route path="/submissions/:contestId" element={<SubmitCode />} />
+          element={<PrivateRoute element={<SubmitCode />} />}
+        />
       </Routes>
     </Router>
   );

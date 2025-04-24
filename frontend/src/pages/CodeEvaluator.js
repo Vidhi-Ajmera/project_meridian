@@ -244,7 +244,7 @@ const CodeEvaluator = () => {
 
     try {
       const response = await axios.get(
-        `https://codeevaluator.azurewebsites.net/protected`,
+        `http://localhost:8000/protected`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

@@ -6,7 +6,7 @@ import { auth, provider, signInWithPopup } from "../components/firebase";
 import { sendPasswordResetEmail } from "firebase/auth";
 import "../../src/styles/Login.css";
 import { FaCode } from "react-icons/fa";
-import { getToken, saveToken, saveUserInfo } from "../utils/auth";
+import { saveToken, saveUserInfo } from "../utils/auth";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -16,14 +16,12 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
-  // Update the login success handler in LoginPage.js
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    localStorage.setItem("authToken", getToken);
 
     try {
-      const response = await axios.post(`https://codeevaluator.azurewebsites.net/auth/login`, {
+      const response = await axios.post(`http://localhost:8000/auth/login`, {
         email,
         password,
         role,
@@ -33,8 +31,8 @@ const LoginPage = () => {
         const { access_token, username, role, email } = response.data;
 
         // Use the unified auth functions
-        saveToken(response.data.access_token);
-        saveUserInfo({ email, role });
+        saveToken(access_token);
+        saveUserInfo({ email, username, role });
 
         // Redirect based on role
         navigate("/");
@@ -108,16 +106,6 @@ const LoginPage = () => {
                 <option value="teacher">Teacher</option>
               </select>
             </div>
-
-            {/* <p className="forgot-password-text">
-              <button
-                type="button"
-                onClick={handleForgotPassword}
-                className="forgot-password-btn"
-              >
-                Forgot Password?
-              </button>
-            </p> */}
 
             <button type="submit" className="login-btn">
               Login Now

@@ -37,18 +37,21 @@ const LandingPage = () => {
   const [profileImage, setProfileImage] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // Update the useEffect in LandingPage.js to use the correct token name
   useEffect(() => {
     const token = localStorage.getItem("authToken");
     if (token) {
       setIsAuthenticated(true);
 
-      // Get the user's email from localStorage
+      // Get the user's information from localStorage
       const userInfoString = localStorage.getItem("userInfo");
       if (userInfoString) {
         try {
           const userInfo = JSON.parse(userInfoString);
-          // Extract username from email (everything before @)
-          if (userInfo.email) {
+          // Extract username from email (everything before @) if username isn't available
+          if (userInfo.username) {
+            setUsername(userInfo.username);
+          } else if (userInfo.email) {
             const extractedUsername = userInfo.email.split("@")[0];
             setUsername(extractedUsername);
           }
