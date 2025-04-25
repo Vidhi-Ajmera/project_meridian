@@ -3,79 +3,9 @@ import axios from "axios";
 import { getToken } from "../utils/auth";
 import { useParams, useNavigate } from "react-router-dom";
 import "../styles/SubmissionViewer.css";
-import Prism from "prismjs";
-import "prismjs/themes/prism-tomorrow.css";
 
 const API_URL =
   process.env.REACT_APP_API_URL || "https://codeevaluator.azurewebsites.net/";
-
-const CodeViewer = ({
-  code,
-  language,
-  isOpen,
-  onClose,
-  studentEmail,
-  questionTitle,
-}) => {
-  useEffect(() => {
-    if (isOpen) {
-      Prism.highlightAll();
-      // Prevent body scrolling when modal is open
-      document.body.style.overflow = "hidden";
-    }
-
-    return () => {
-      document.body.style.overflow = "auto";
-    };
-  }, [isOpen, code, language]);
-
-  if (!isOpen) return null;
-
-  const formatLanguage = (lang) => {
-    const languageMap = {
-      python: "python",
-      javascript: "javascript",
-      java: "java",
-      c: "c",
-      cpp: "cpp",
-      csharp: "csharp",
-      // Add more mappings as needed
-    };
-
-    return languageMap[lang.toLowerCase()] || "markup";
-  };
-
-  return (
-    <div className="code-modal-overlay">
-      <div className="code-modal">
-        <div className="code-modal-header">
-          <div className="code-modal-title">
-            <h3>{questionTitle}</h3>
-            <p>Submitted by: {studentEmail}</p>
-          </div>
-          <button className="code-modal-close" onClick={onClose}>
-            ×
-          </button>
-        </div>
-        <div className="code-modal-content">
-          <pre className="code-container">
-            <code className={`language-${formatLanguage(language)}`}>
-              {code}
-            </code>
-          </pre>
-        </div>
-        <div className="code-modal-footer">
-          <div className="code-modal-language">
-            Language: <span className="code-language-badge">{language}</span>
-          </div>
-          <button className="btn btn-secondary" onClick={onClose}>
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const Submissions = () => {
   const { contestId } = useParams();
@@ -84,8 +14,6 @@ const Submissions = () => {
   const [contest, setContest] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [selectedSubmission, setSelectedSubmission] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
   const token = getToken();
 
   useEffect(() => {
@@ -120,15 +48,6 @@ const Submissions = () => {
 
   const goBack = () => {
     navigate(-1);
-  };
-
-  const openCodeViewer = (submission) => {
-    setSelectedSubmission(submission);
-    setModalOpen(true);
-  };
-
-  const closeCodeViewer = () => {
-    setModalOpen(false);
   };
 
   if (loading) {
@@ -179,7 +98,11 @@ const Submissions = () => {
                   <td>
                     <button
                       className="btn btn-primary"
-                      onClick={() => openCodeViewer(submission)}
+                      onClick={() => {
+                        // Create a modal or expand to show code
+                        alert(submission.code);
+                        // In a real app, you'd want to show this in a modal
+                      }}
                     >
                       View Code
                     </button>
@@ -189,17 +112,6 @@ const Submissions = () => {
             </tbody>
           </table>
         </div>
-      )}
-
-      {selectedSubmission && (
-        <CodeViewer
-          code={selectedSubmission.code}
-          language={selectedSubmission.language}
-          isOpen={modalOpen}
-          onClose={closeCodeViewer}
-          studentEmail={selectedSubmission.student_email}
-          questionTitle={selectedSubmission.question_title}
-        />
       )}
     </div>
   );
