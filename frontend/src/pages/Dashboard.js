@@ -1,15 +1,40 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { clearToken } from "../utils/auth";
+import { clearToken, getToken } from "../utils/auth";
 import "../styles/Dashboard.css";
 
-const Dashboard = ({ userRole }) => {
+const Dashboard = ({ userRole: initialUserRole }) => {
   const navigate = useNavigate();
+  const [userRole, setUserRole] = useState(initialUserRole || null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // If initialUserRole is provided, use it and we're done
+    if (initialUserRole) {
+      setIsLoading(false);
+      return;
+    }
+
+    // Otherwise, try to get the role from the token
+    const tokenData = getToken();
+    if (tokenData && tokenData.role) {
+      setUserRole(tokenData.role);
+      setIsLoading(false);
+    } else {
+      // If no role found, redirect to login
+      clearToken();
+      navigate("/login");
+    }
+  }, [initialUserRole, navigate]);
 
   const logout = () => {
     clearToken();
     navigate("/login");
   };
+
+  if (isLoading) {
+    return <div className="dashboard-container">Loading...</div>;
+  }
 
   return (
     <div className="dashboard-container">

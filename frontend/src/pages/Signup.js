@@ -17,7 +17,7 @@ const SignUpPage = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-
+  const API_URL = process.env.REACT_APP_BACKEND_URL;
   // Redirect if user is already logged in
   useEffect(() => {
     const token = localStorage.getItem("authToken");
@@ -40,15 +40,12 @@ const SignUpPage = () => {
     setError("");
 
     try {
-      const response = await axios.post(
-        "https://codeevaluator.azurewebsites.net/auth/signup",
-        {
-          username: username,
-          email: email,
-          password: password,
-          role: role,
-        }
-      );
+      const response = await axios.post(`${API_URL}/auth/signup`, {
+        username: username,
+        email: email,
+        password: password,
+        role: role,
+      });
 
       if (response.data && response.data.access_token) {
         const { access_token, username, role, email } = response.data;

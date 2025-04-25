@@ -113,3 +113,227 @@ html, body {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+/* Existing styles from your SubmissionViewer.css */
+
+/* Code Modal Styles */
+.code-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.code-modal {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 1200px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.3s ease-out;
+}
+
+.code-modal-header {
+  background-color: #f8f9fa;
+  padding: 16px 24px;
+  border-bottom: 1px solid #e3e6f0;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.code-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.code-modal-title h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.code-icon {
+  color: #4a6fdc;
+}
+
+.code-modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.analyze-code-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.analyze-code-btn:hover {
+  background-color: #2563eb;
+}
+
+.close-modal-btn {
+  background-color: transparent;
+  border: none;
+  color: #6b7280;
+  font-size: 1.25rem;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.close-modal-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #1f2937;
+}
+
+.code-modal-details {
+  padding: 16px 24px;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e3e6f0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
+.code-display-container {
+  padding: 0;
+  overflow-y: auto;
+  flex-grow: 1;
+  background-color: #282c34;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.code-display-container pre {
+  margin: 0;
+  padding: 20px;
+  font-family: 'Fira Code', Consolas, Monaco, 'Andale Mono', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  color: #abb2bf;
+}
+
+/* Language-specific styling */
+.language-python {
+  color: #f8f8f2;
+}
+
+.language-javascript {
+  color: #f8f8f2;
+}
+
+.language-java {
+  color: #f8f8f2;
+}
+
+.language-cpp {
+  color: #f8f8f2;
+}
+
+/* Table styling improvements */
+.submissions-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.submissions-table th {
+  background-color: #f3f4f6;
+  color: #374151;
+  font-weight: 600;
+  text-align: left;
+  padding: 12px 16px;
+}
+
+.submissions-table tr:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+.submissions-table td {
+  padding: 12px 16px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.view-code-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.view-code-btn:hover {
+  background-color: #2563eb;
+}
+
+.language-cell {
+  text-transform: capitalize;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  .code-modal {
+    width: 95%;
+    max-height: 95vh;
+  }
+  
+  .code-modal-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .code-modal-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

@@ -42,10 +42,11 @@ function ParticipateContest() {
   const [selectedQuestion, setSelectedQuestion] = useState("");
   const [studentEmail, setStudentEmail] = useState("");
   const navigate = useNavigate();
+  const API_URL = process.env.REACT_APP_BACKEND_URL;
 
   // Modify your axios instance
   const api = axios.create({
-    baseURL: "https://codeevaluator.azurewebsites.net/",
+    baseURL: `${API_URL}`,
   });
 
   // Add request interceptor to include token
@@ -85,12 +86,9 @@ function ParticipateContest() {
           return;
         }
 
-        const response = await axios.get(
-          `https://codeevaluator.azurewebsites.net/contest/active`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const response = await axios.get(`${API_URL}/contest/active`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         setContests(response.data);
       } catch (err) {

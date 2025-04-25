@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { FiX, FiPlus, FiAward, FiBook, FiMail } from "react-icons/fi";
 
 const API_URL =
-  process.env.REACT_APP_API_URL || "https://codeevaluator.azurewebsites.net/";
+  process.env.REACT_APP_BACKEND_URL || "https://codeevaluator.azurewebsites.net/";
 
 const CreateContest = () => {
   const navigate = useNavigate();

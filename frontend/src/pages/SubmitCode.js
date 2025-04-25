@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { getToken } from "../utils/auth";
 import { useParams, useNavigate } from "react-router-dom";
+import { FaChevronLeft, FaCode, FaBrain, FaTimes } from "react-icons/fa";
 import "../styles/SubmissionViewer.css";
 
-const API_URL =
-  process.env.REACT_APP_API_URL || "https://codeevaluator.azurewebsites.net/";
+const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 const Submissions = () => {
   const { contestId } = useParams();
@@ -14,6 +14,8 @@ const Submissions = () => {
   const [contest, setContest] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedSubmission, setSelectedSubmission] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
   const token = getToken();
 
   useEffect(() => {
@@ -50,6 +52,41 @@ const Submissions = () => {
     navigate(-1);
   };
 
+  const openCodeModal = (submission) => {
+    setSelectedSubmission(submission);
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setTimeout(() => setSelectedSubmission(null), 300); // Clear after animation completes
+  };
+
+  const goToCodeEvaluator = () => {
+    // Save code to session storage to use in code evaluator
+    if (selectedSubmission) {
+      sessionStorage.setItem("codeToAnalyze", selectedSubmission.code);
+      sessionStorage.setItem(
+        "codeLanguage",
+        selectedSubmission.language.toLowerCase()
+      );
+      navigate("/code-evaluator");
+    }
+  };
+
+  // Detect language for syntax highlighting
+  const getLanguageClass = (language) => {
+    const langMap = {
+      python: "language-python",
+      javascript: "language-javascript",
+      java: "language-java",
+      cpp: "language-cpp",
+      "c++": "language-cpp",
+    };
+
+    return langMap[language.toLowerCase()] || "language-plaintext";
+  };
+
   if (loading) {
     return (
       <div className="loading-container">
@@ -62,7 +99,7 @@ const Submissions = () => {
     <div className="submissions-container">
       <div className="page-header">
         <button className="btn btn-secondary back-button" onClick={goBack}>
-          &larr; Back
+          <FaChevronLeft /> Back
         </button>
         <h1 className="page-title">
           Submissions for {contest?.title || "Contest"}
@@ -93,24 +130,64 @@ const Submissions = () => {
                 <tr key={submission.id}>
                   <td>{submission.student_email}</td>
                   <td>{submission.question_title}</td>
-                  <td>{submission.language}</td>
+                  <td className="language-cell">{submission.language}</td>
                   <td>{new Date(submission.submitted_at).toLocaleString()}</td>
                   <td>
                     <button
-                      className="btn btn-primary"
-                      onClick={() => {
-                        // Create a modal or expand to show code
-                        alert(submission.code);
-                        // In a real app, you'd want to show this in a modal
-                      }}
+                      className="btn btn-primary view-code-btn"
+                      onClick={() => openCodeModal(submission)}
                     >
-                      View Code
+                      <FaCode /> View Code
                     </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Code Viewing Modal */}
+      {modalOpen && selectedSubmission && (
+        <div className="code-modal-overlay" onClick={closeModal}>
+          <div className="code-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="code-modal-header">
+              <div className="code-modal-title">
+                <FaCode className="code-icon" />
+                <h2>{selectedSubmission.question_title}</h2>
+              </div>
+              <div className="code-modal-actions">
+                <button
+                  className="analyze-code-btn"
+                  onClick={goToCodeEvaluator}
+                >
+                  <FaBrain /> Analyze Code
+                </button>
+                <button className="close-modal-btn" onClick={closeModal}>
+                  <FaTimes />
+                </button>
+              </div>
+            </div>
+
+            <div className="code-modal-details">
+              <span>
+                <strong>Student:</strong> {selectedSubmission.student_email}
+              </span>
+              <span>
+                <strong>Language:</strong> {selectedSubmission.language}
+              </span>
+              <span>
+                <strong>Submitted:</strong>{" "}
+                {new Date(selectedSubmission.submitted_at).toLocaleString()}
+              </span>
+            </div>
+
+            <div className="code-display-container">
+              <pre className={getLanguageClass(selectedSubmission.language)}>
+                <code>{selectedSubmission.code}</code>
+              </pre>
+            </div>
+          </div>
         </div>
       )}
     </div>
