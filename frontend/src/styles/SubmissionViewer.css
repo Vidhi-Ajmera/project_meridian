@@ -113,3 +113,115 @@ html, body {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* Add these styles to your SubmissionViewer.css file */
+
+/* Modal Overlay */
+.code-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* Modal Container */
+.code-modal {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  width: 80%;
+  max-width: 1000px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Modal Header */
+.code-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.code-modal-title {
+  flex: 1;
+}
+
+.code-modal-title h3 {
+  margin: 0 0 5px 0;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.code-modal-title p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.code-modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #777;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 10px;
+}
+
+.code-modal-close:hover {
+  color: #333;
+}
+
+/* Modal Content */
+.code-modal-content {
+  padding: 0;
+  overflow-y: auto;
+  flex: 1;
+  background-color: #2d2d2d;
+}
+
+.code-container {
+  margin: 0;
+  padding: 16px;
+  overflow-x: auto;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  max-height: 60vh;
+}
+
+/* Modal Footer */
+.code-modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  border-top: 1px solid #e0e0e0;
+  background-color: #f9f9f9;
+}
+
+.code-language-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  background-color: #e0e7ff;
+  color: #4338ca;
+}
+
+/* Making sure the prism code syntax highlighting looks good */
+pre[class*="language-"] {
+  margin: 0;
+  border-radius: 4px;
+}
