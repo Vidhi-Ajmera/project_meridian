@@ -5,7 +5,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { FaChevronLeft, FaCode, FaBrain, FaTimes } from "react-icons/fa";
 import "../styles/SubmissionViewer.css";
 
-const API_URL = process.env.REACT_APP_BACKEND_URL;
+const API_URL = process.env.REACT_APP_BACKEND_URL || `https://codeevaluator.azurewebsites.net/`;
 
 const Submissions = () => {
   const { contestId } = useParams();

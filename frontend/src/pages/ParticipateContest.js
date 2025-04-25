@@ -42,8 +42,9 @@ function ParticipateContest() {
   const [selectedQuestion, setSelectedQuestion] = useState("");
   const [studentEmail, setStudentEmail] = useState("");
   const navigate = useNavigate();
-  const API_URL = process.env.REACT_APP_BACKEND_URL;
-
+  const API_URL =
+    process.env.REACT_APP_BACKEND_URL ||
+    `https://codeevaluator.azurewebsites.net/`;
   // Modify your axios instance
   const api = axios.create({
     baseURL: `${API_URL}`,

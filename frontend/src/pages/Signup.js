@@ -17,7 +17,9 @@ const SignUpPage = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const API_URL = process.env.REACT_APP_BACKEND_URL;
+  const API_URL =
+    process.env.REACT_APP_BACKEND_URL ||
+    `https://codeevaluator.azurewebsites.net/`;
   // Redirect if user is already logged in
   useEffect(() => {
     const token = localStorage.getItem("authToken");

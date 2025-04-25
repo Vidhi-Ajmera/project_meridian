@@ -15,7 +15,9 @@ const LoginPage = () => {
   const [role, setRole] = useState("student"); // Default to student
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
-  const API_URL = process.env.REACT_APP_BACKEND_URL;
+  const API_URL =
+    process.env.REACT_APP_BACKEND_URL ||
+    `https://codeevaluator.azurewebsites.net/`;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
