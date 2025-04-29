@@ -5,14 +5,15 @@ import "../styles/MyContest.css";
 import { useNavigate } from "react-router-dom";
 
 const API_URL =
-  process.env.REACT_APP_BACKEND_URL || "https://codeevaluator.azurewebsites.net/";
+  process.env.REACT_APP_BACKEND_URL ||
+  "https://codeevaluator.azurewebsites.net/";
 
 const MyContests = () => {
   const navigate = useNavigate();
   const [contests, setContests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const token = getToken();
+  // Remove this line: const token = getToken();
 
   useEffect(() => {
     fetchContests();
@@ -20,12 +21,22 @@ const MyContests = () => {
 
   const fetchContests = async () => {
     setLoading(true);
+    const tokenData = getToken(); // Get fresh token data
+
+    if (!tokenData || !tokenData.token) {
+      console.error("No token found!");
+      setError("Authentication required. Please log in.");
+      setTimeout(() => navigate("/login"), 2000);
+      return;
+    }
+
     try {
       const res = await axios.get(`${API_URL}/contest/teacher/mycontest`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${tokenData.token}` },
       });
       setContests(res.data);
     } catch (error) {
+      console.error("Error fetching contests:", error);
       setError(error.response?.data?.message || "Failed to fetch contests");
     } finally {
       setLoading(false);
@@ -34,14 +45,23 @@ const MyContests = () => {
 
   const toggleStatus = async (id, isActive) => {
     const endpoint = isActive ? "end" : "start";
+    const tokenData = getToken(); // Get the token data object
+
+    if (!tokenData || !tokenData.token) {
+      setError("Authentication token not found. Please log in again.");
+      setTimeout(() => navigate("/login"), 2000);
+      return;
+    }
+
     try {
       await axios.post(
         `${API_URL}/contest/${endpoint}/${id}`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${tokenData.token}` } } // Use tokenData.token
       );
       fetchContests();
     } catch (error) {
+      console.error("Error toggling contest status:", error);
       setError(
         error.response?.data?.message || "Failed to update contest status"
       );

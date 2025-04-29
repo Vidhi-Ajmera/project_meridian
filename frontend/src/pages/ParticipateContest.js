@@ -42,53 +42,24 @@ function ParticipateContest() {
   const [selectedQuestion, setSelectedQuestion] = useState("");
   const [studentEmail, setStudentEmail] = useState("");
   const navigate = useNavigate();
+
+  // Get API URL from environment or use a default
   const API_URL =
     process.env.REACT_APP_BACKEND_URL ||
-    `https://codeevaluator.azurewebsites.net/`;
-  // Modify your axios instance
-  const api = axios.create({
-    baseURL: `${API_URL}`,
-  });
-
-  // Add request interceptor to include token
-  api.interceptors.request.use(
-    (config) => {
-      const token = getToken();
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    },
-    (error) => {
-      return Promise.reject(error);
-    }
-  );
-
-  // Add response interceptor to handle token expiration
-  api.interceptors.response.use(
-    (response) => response,
-    (error) => {
-      if (error.response?.status === 401) {
-        // Token expired or invalid
-        localStorage.removeItem("authToken");
-        navigate("/login");
-      }
-      return Promise.reject(error);
-    }
-  );
+    "https://codeevaluator.azurewebsites.net/";
 
   // Fetch active contests
   useEffect(() => {
     const fetchContests = async () => {
       try {
-        const token = localStorage.getItem("authToken");
-        if (!token) {
+        const tokenData = getToken();
+        if (!tokenData || !tokenData.token) {
           navigate("/login");
           return;
         }
 
         const response = await axios.get(`${API_URL}/contest/active`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${tokenData.token}` },
         });
 
         setContests(response.data);
@@ -99,16 +70,36 @@ function ParticipateContest() {
             err.response?.data?.message ||
             "Failed to fetch contests"
         );
+
+        // Handle token expiration
+        if (err.response?.status === 401) {
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("userInfo");
+          navigate("/login");
+        }
       } finally {
         setLoading((prev) => ({ ...prev, contests: false }));
       }
     };
 
     fetchContests();
-  }, [navigate]);
+  }, [navigate, API_URL]);
 
+  // Helper function to safely get question details
+  const getSelectedQuestionDetails = () => {
+    if (!selectedContest || !selectedQuestion) return null;
+
+    return selectedContest.questions?.find((q) => q.title === selectedQuestion);
+  };
+
+  // Update the handleSubmitCode function in ParticipateContest.js
   const handleSubmitCode = async () => {
-    if (!studentEmail || !selectedQuestion || !code || !language) {
+    if (!selectedContest) {
+      setError("Please select a contest first");
+      return;
+    }
+
+    if (!selectedQuestion || !code || !language) {
       setError("Please fill in all fields");
       return;
     }
@@ -119,7 +110,7 @@ function ParticipateContest() {
 
     try {
       const contestId = selectedContest._id || selectedContest.id;
-      const question = selectedContest.questions.find(
+      const question = selectedContest.questions?.find(
         (q) => q.title === selectedQuestion
       );
 
@@ -128,25 +119,81 @@ function ParticipateContest() {
         return;
       }
 
+      const tokenData = getToken();
+      if (!tokenData || !tokenData.token) {
+        setError("Authentication required. Please log in.");
+        setTimeout(() => navigate("/login"), 2000);
+        return;
+      }
+
+      const email = studentEmail || tokenData.email || "";
       const payload = {
         contest_id: contestId,
         question_title: selectedQuestion,
         code,
         language,
+        studentEmail: email,
       };
 
-      // Use the api instance instead of axios directly
-      const response = await api.post("/submissions/submit", payload);
+      try {
+        const response = await axios.post(
+          `${API_URL}/submissions/submit`,
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${tokenData.token}`,
+              "Content-Type": "application/json",
+            },
+            timeout: 10000, // 10 seconds timeout
+          }
+        );
 
-      setSuccess("Your code has been submitted successfully!");
-      setCode("");
-      setSelectedQuestion("");
+        // If we get here, the submission was successful
+        setSuccess("Your code has been submitted successfully!");
+        setCode("");
+        setSelectedQuestion("");
+      } catch (err) {
+        // Special handling for 500 errors that might actually indicate success
+        if (err.response?.status === 500) {
+          // Check if the error is specifically about plagiarism analysis
+          if (
+            err.response.data?.detail?.includes("plagiarism") ||
+            err.response.data?.detail?.includes("Failed to parse")
+          ) {
+            // Show a success message but warn about the analysis
+            setSuccess(
+              "Code submitted successfully (analysis may be incomplete)"
+            );
+            setCode("");
+            setSelectedQuestion("");
+            return;
+          }
+        }
+        // For all other errors, show the actual error
+        throw err;
+      }
     } catch (err) {
-      console.error("Error submitting code:", err);
-      setError(
-        err.response?.data?.message ||
-          "Submission failed. Please try again later."
-      );
+      console.error("Submission error:", err);
+
+      let errorMessage = "Submission failed. Please try again later.";
+
+      if (err.response) {
+        if (err.response.status === 401) {
+          errorMessage = "Session expired. Please log in again.";
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("userInfo");
+          navigate("/login");
+          return;
+        } else if (err.response.data?.detail) {
+          errorMessage = err.response.data.detail;
+        }
+      } else if (err.code === "ECONNABORTED") {
+        errorMessage = "Request timed out. Please check your connection.";
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+
+      setError(errorMessage);
     } finally {
       setLoading((prev) => ({ ...prev, submitting: false }));
     }
@@ -162,6 +209,9 @@ function ParticipateContest() {
       </Container>
     );
   }
+
+  // Get question details safely
+  const questionDetails = getSelectedQuestionDetails();
 
   return (
     <div className="participate-component">
@@ -270,67 +320,53 @@ function ParticipateContest() {
                 </FormControl>
               </Grid>
 
-              {selectedQuestion && (
-                <>
-                  <Grid item xs={12}>
-                    <Paper
-                      elevation={2}
-                      sx={{ p: 2 }}
-                      className="question-details"
+              {selectedQuestion && questionDetails && (
+                <Grid item xs={12}>
+                  <Paper
+                    elevation={2}
+                    sx={{ p: 2 }}
+                    className="question-details"
+                  >
+                    <Typography
+                      variant="subtitle1"
+                      gutterBottom
+                      className="detail-title"
                     >
-                      <Typography
-                        variant="subtitle1"
-                        gutterBottom
-                        className="detail-title"
-                      >
-                        Description:
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{ whiteSpace: "pre-line" }}
-                        className="question-description"
-                      >
-                        {
-                          selectedContest.questions.find(
-                            (q) => q.title === selectedQuestion
-                          ).description
-                        }
-                      </Typography>
+                      Description:
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ whiteSpace: "pre-line" }}
+                      className="question-description"
+                    >
+                      {questionDetails.description}
+                    </Typography>
 
-                      <Typography
-                        variant="subtitle1"
-                        gutterBottom
-                        sx={{ mt: 2 }}
-                        className="detail-title"
-                      >
-                        Sample Input:
-                      </Typography>
-                      <Box component="pre" className="code-sample">
-                        {
-                          selectedContest.questions.find(
-                            (q) => q.title === selectedQuestion
-                          ).sample_input
-                        }
-                      </Box>
+                    <Typography
+                      variant="subtitle1"
+                      gutterBottom
+                      sx={{ mt: 2 }}
+                      className="detail-title"
+                    >
+                      Sample Input:
+                    </Typography>
+                    <Box component="pre" className="code-sample">
+                      {questionDetails.sample_input}
+                    </Box>
 
-                      <Typography
-                        variant="subtitle1"
-                        gutterBottom
-                        sx={{ mt: 2 }}
-                        className="detail-title"
-                      >
-                        Sample Output:
-                      </Typography>
-                      <Box component="pre" className="code-sample">
-                        {
-                          selectedContest.questions.find(
-                            (q) => q.title === selectedQuestion
-                          ).sample_output
-                        }
-                      </Box>
-                    </Paper>
-                  </Grid>
-                </>
+                    <Typography
+                      variant="subtitle1"
+                      gutterBottom
+                      sx={{ mt: 2 }}
+                      className="detail-title"
+                    >
+                      Sample Output:
+                    </Typography>
+                    <Box component="pre" className="code-sample">
+                      {questionDetails.sample_output}
+                    </Box>
+                  </Paper>
+                </Grid>
               )}
 
               <Grid item xs={12}>

@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { getToken } from "../utils/auth";
+import { getToken } from "../utils/auth.js";
 import "../styles/CreateContest.css";
 import { useNavigate } from "react-router-dom";
 import { FiX, FiPlus, FiAward, FiBook, FiMail } from "react-icons/fi";
 
 const API_URL =
-  process.env.REACT_APP_BACKEND_URL || "https://codeevaluator.azurewebsites.net/";
+  process.env.REACT_APP_BACKEND_URL ||
+  "https://codeevaluator.azurewebsites.net/";
 
 const CreateContest = () => {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ const CreateContest = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-  const token = getToken();
+  const tokenData = getToken(); // Get the token data object
 
   const [qTitle, setQTitle] = useState("");
   const [qDesc, setQDesc] = useState("");
@@ -35,7 +36,7 @@ const CreateContest = () => {
       sample_input: qInput,
       sample_output: qOutput,
     };
-    console.log(token);
+    console.log(tokenData);
     setQuestions([...questions, newQuestion]);
     setQTitle("");
     setQDesc("");
@@ -61,6 +62,13 @@ const CreateContest = () => {
     setError("");
 
     try {
+      // Check if tokenData exists and has a token property
+      if (!tokenData || !tokenData.token) {
+        setError("Authentication token not found. Please log in again.");
+        setTimeout(() => navigate("/login"), 2000);
+        return;
+      }
+
       await axios.post(
         `${API_URL}/contest/create`,
         {
@@ -70,7 +78,7 @@ const CreateContest = () => {
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${tokenData.token}`, // Use tokenData.token instead of token
             "Content-Type": "application/json",
           },
         }
@@ -81,12 +89,12 @@ const CreateContest = () => {
         navigate("/my-contests");
       }, 2000);
     } catch (error) {
+      console.error("API Error:", error);
       setError(error.response?.data?.message || "Failed to create contest");
     } finally {
       setIsSubmitting(false);
     }
   };
-
   return (
     <div className="create-contest-container">
       <div className="header-section">

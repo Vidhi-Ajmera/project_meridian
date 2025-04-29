@@ -5,7 +5,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { FaChevronLeft, FaCode, FaBrain, FaTimes } from "react-icons/fa";
 import "../styles/SubmissionViewer.css";
 
-const API_URL = process.env.REACT_APP_BACKEND_URL || `https://codeevaluator.azurewebsites.net/`;
+const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 const Submissions = () => {
   const { contestId } = useParams();
@@ -16,13 +16,21 @@ const Submissions = () => {
   const [error, setError] = useState("");
   const [selectedSubmission, setSelectedSubmission] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const token = getToken();
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Fetch contest details to display title
+        const tokenData = getToken();
+        const token = tokenData?.token || tokenData; // Handle both cases
+
+        if (!token) {
+          setError("Authentication token not found. Please log in again.");
+          setLoading(false);
+          return;
+        }
+
+        // Fetch contest details
         const contestRes = await axios.get(`${API_URL}/contest/all`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -39,14 +47,21 @@ const Submissions = () => {
         );
         setSubmissions(submissionsRes.data);
       } catch (error) {
-        setError(error.response?.data?.detail || "Failed to fetch submissions");
+        console.error("Fetch error:", error);
+        if (error.response?.status === 401) {
+          setError("Your session has expired. Please log in again.");
+        } else {
+          setError(
+            error.response?.data?.detail || "Failed to fetch submissions"
+          );
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [contestId, token]);
+  }, [contestId]);
 
   const goBack = () => {
     navigate(-1);
@@ -59,11 +74,10 @@ const Submissions = () => {
 
   const closeModal = () => {
     setModalOpen(false);
-    setTimeout(() => setSelectedSubmission(null), 300); // Clear after animation completes
+    setTimeout(() => setSelectedSubmission(null), 300);
   };
 
   const goToCodeEvaluator = () => {
-    // Save code to session storage to use in code evaluator
     if (selectedSubmission) {
       sessionStorage.setItem("codeToAnalyze", selectedSubmission.code);
       sessionStorage.setItem(
@@ -74,7 +88,6 @@ const Submissions = () => {
     }
   };
 
-  // Detect language for syntax highlighting
   const getLanguageClass = (language) => {
     const langMap = {
       python: "language-python",
@@ -91,6 +104,16 @@ const Submissions = () => {
     return (
       <div className="loading-container">
         <div className="loading-spinner"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="error-container">
+        <h2>Error</h2>
+        <p>{error}</p>
+        <button onClick={() => navigate("/login")}>Go to Login</button>
       </div>
     );
   }

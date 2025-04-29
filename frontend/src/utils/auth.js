@@ -1,43 +1,57 @@
 // utils/auth.js
-export const saveToken = (token) => localStorage.setItem("authToken", token);
+
+// Save token to localStorage
+export const saveToken = (token) => {
+  localStorage.setItem("authToken", token);
+};
+
+// Get token and user details
 export const getToken = () => {
-  const token = localStorage.getItem("token");
-  const userData = localStorage.getItem("userData");
+  const token = localStorage.getItem("authToken");
+  const userInfo = localStorage.getItem("userInfo"); // <-- changed to userInfo
 
   if (!token) return null;
 
   try {
-    // If you have stored the user data separately in localStorage
-    if (userData) {
-      const parsedData = JSON.parse(userData);
+    if (userInfo) {
+      const parsedData = JSON.parse(userInfo);
       return {
-        token: token,
+        token,
         role: parsedData.role,
         username: parsedData.username,
         email: parsedData.email,
       };
     }
 
-    // Fallback to parsing JWT if userData isn't available
-    // (assuming token is JWT with role in payload)
-    const payload = JSON.parse(atob(token.split(".")[1]));
+    // Fallback to decoding JWT manually (unsafe, but acceptable for simple apps)
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const payload = JSON.parse(atob(base64));
+
     return {
-      token: token,
+      token,
       role: payload.role || null,
       username: payload.username || null,
       email: payload.email || null,
     };
   } catch (error) {
-    console.error("Error parsing token data", error);
+    console.error("Error parsing token or user info:", error);
     return null;
   }
 };
+
+// Clear token and user info
 export const clearToken = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("userData");
+  localStorage.removeItem("authToken");
+  localStorage.removeItem("userInfo");
 };
-export const saveUserInfo = (userInfo) =>
+
+// Save user info to localStorage
+export const saveUserInfo = (userInfo) => {
   localStorage.setItem("userInfo", JSON.stringify(userInfo));
+};
+
+// Get user info
 export const getUserInfo = () => {
   const userInfo = localStorage.getItem("userInfo");
   return userInfo ? JSON.parse(userInfo) : null;

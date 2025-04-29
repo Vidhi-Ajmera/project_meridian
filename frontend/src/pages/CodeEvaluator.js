@@ -223,11 +223,13 @@ const CodeEvaluator = () => {
   const [alertSeverity, setAlertSeverity] = useState("info");
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const reportRef = useRef(null);
-  const isTokenExpired = (token) => {
-    if (!token) return true;
+  // In CodeEvaluator.js, update the isTokenExpired function:
+
+  const isTokenExpired = (tokenData) => {
+    if (!tokenData || !tokenData.token) return true;
 
     try {
-      const payload = token.split(".")[1];
+      const payload = tokenData.token.split(".")[1];
       const decoded = JSON.parse(atob(payload));
       return decoded.exp < Date.now() / 1000;
     } catch (error) {
@@ -236,23 +238,23 @@ const CodeEvaluator = () => {
     }
   };
   const fetchProtectedData = async () => {
-    const token = getToken();
+    const tokenData = getToken();
 
-    if (!token) {
-      console.log("No token found. Please log in.");
+    if (!tokenData || !tokenData.token || isTokenExpired(tokenData)) {
+      console.log("No token found or token expired. Please log in.");
       return;
     }
 
     try {
-      const response = await axios.get(`{API_URL}/protected`, {
+      const response = await axios.get(`${API_URL}/protected`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${tokenData.token}`,
         },
       });
 
       console.log("Protected Data:", response.data);
       setIsAuthenticated(true);
-      setUsername(response.data.username || "User");
+      setUsername(tokenData.username || "User");
     } catch (error) {
       console.error("Error fetching protected data:", error);
       if (error.response && error.response.status === 401) {
@@ -267,13 +269,27 @@ const CodeEvaluator = () => {
 
   // Check for token on component mount
   useEffect(() => {
-    fetchProtectedData();
-    const token = getToken();
-    if (!token) {
+    const tokenData = getToken();
+    if (!tokenData || !tokenData.token || isTokenExpired(tokenData)) {
       setAlertMessage("Please log in first");
       setAlertSeverity("error");
       setAlertOpen(true);
       setTimeout(() => navigate("/login"), 2000);
+    } else {
+      setIsAuthenticated(true);
+      setUsername(tokenData.username || "User");
+
+      // Load any saved code from session storage
+      const savedCode = sessionStorage.getItem("codeToAnalyze");
+      const savedLanguage = sessionStorage.getItem("codeLanguage");
+
+      if (savedCode) {
+        setCode(savedCode);
+      }
+
+      if (savedLanguage) {
+        setLanguage(savedLanguage);
+      }
     }
   }, [navigate]);
 
@@ -296,15 +312,15 @@ const CodeEvaluator = () => {
     setAnalysisResult(null);
 
     try {
-      const token = getToken();
-      if (!token) {
+      const tokenData = getToken();
+      if (!tokenData || !tokenData.token || isTokenExpired(tokenData)) {
         setAlertMessage("Please log in first");
         setAlertSeverity("error");
         setAlertOpen(true);
         setTimeout(() => navigate("/login"), 2000);
         return;
       }
-      if (isTokenExpired(token)) {
+      if (isTokenExpired(tokenData)) {
         setAlertMessage("Your session has expired. Please log in again.");
         setAlertSeverity("error");
         setAlertOpen(true);
@@ -322,7 +338,7 @@ const CodeEvaluator = () => {
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${tokenData.token}`,
             "Content-Type": "application/json",
           },
         }

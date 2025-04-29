@@ -496,8 +496,9 @@ async def get_teacher_contests(current_user: dict = Depends(get_current_user)):
 questions_router = APIRouter()
        
 @app.get("/protected")
-async def protected_route(current_user: dict = Depends(Token)):
+async def protected_route(current_user: dict = Depends(get_current_user)):
     return {"message": "Access granted", "user": current_user}
+
 
 @questions_router.post("/add")
 async def add_question(data: QuestionCreate, current_user: dict = Depends(get_current_user)):
@@ -534,7 +535,6 @@ async def add_question(data: QuestionCreate, current_user: dict = Depends(get_cu
 # =========================
 submissions_router = APIRouter()
 
-@submissions_router.post("/submit")
 @submissions_router.post("/submit")
 async def submit_code(sub: SubmissionCreate, current_user: dict = Depends(get_current_user)):
     email = current_user["email"]
