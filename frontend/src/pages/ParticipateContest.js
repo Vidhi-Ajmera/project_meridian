@@ -46,7 +46,7 @@ function ParticipateContest() {
   // Get API URL from environment or use a default
   const API_URL =
     process.env.REACT_APP_BACKEND_URL ||
-    "https://codeevaluator.azurewebsites.net/";
+    "https://codeevaluator.azurewebsites.net";
 
   // Fetch active contests
   useEffect(() => {
